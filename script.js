@@ -5,15 +5,15 @@ function addFlatmate(area) {
     flatmateDiv.className = "flatmate";
 
     flatmateDiv.innerHTML = `
-          <div class="form-group">
-              <label>Name</label>
-              <input type="text" class="${area}-name" placeholder="Flatmate name">
-          </div>
-          <div class="form-group">
-              <label>Days Stayed</label>
-              <input type="number" class="${area}-days" min="0" max="31" value="30">
-          </div>
-      `;
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="${area}-name" placeholder="Flatmate name">
+            </div>
+            <div class="form-group">
+                <label>Days Stayed</label>
+                <input type="number" class="${area}-days" min="0" max="31" value="30">
+            </div>
+        `;
 
     container.appendChild(flatmateDiv);
 }
@@ -64,17 +64,18 @@ function calculateBill() {
     // Calculate units consumed
     const hallUnits = hallCurrent - hallPrevious;
     const roomUnits = roomCurrent - roomPrevious;
-    const totalUnitsCalculated = hallUnits + roomUnits;
+    const submeterUnits = hallUnits + roomUnits;
 
-    // Verify if total units match the bill
-    const unitsMatch = Math.abs(totalUnitsCalculated - totalUnitsBill) < 0.01;
+    // Calculate common units (difference between bill total and submeter readings)
+    const commonUnits = totalUnitsBill - submeterUnits;
 
     // Calculate per unit price
-    const perUnitPrice = totalBill / totalUnitsCalculated;
+    const perUnitPrice = totalBill / totalUnitsBill;
 
-    // Calculate cost for hall and room
+    // Calculate costs
     const hallCost = hallUnits * perUnitPrice;
     const roomCost = roomUnits * perUnitPrice;
+    const commonCost = commonUnits * perUnitPrice;
 
     // Get flatmates information
     const hallFlatmates = getFlatmatesInfo("hall");
@@ -90,30 +91,39 @@ function calculateBill() {
         0
     );
 
+    // Calculate total person-days for common area cost distribution
+    const totalPersonDays = hallTotalDays + roomTotalDays;
+
     // Calculate individual shares
     const distribution = [];
 
     // Calculate for hall flatmates
     hallFlatmates.forEach((flatmate) => {
-        const share = hallCost * (flatmate.days / hallTotalDays);
+        const areaShare = hallCost * (flatmate.days / hallTotalDays);
+        const commonShare = commonCost * (flatmate.days / totalPersonDays);
         distribution.push({
             name: flatmate.name || "Unnamed",
             location: "Hall",
             days: flatmate.days,
-            share: ((flatmate.days / hallTotalDays) * 100).toFixed(2) + "%",
-            amount: share.toFixed(2),
+            areaShare: ((flatmate.days / hallTotalDays) * 100).toFixed(2) + "%",
+            areaAmount: areaShare.toFixed(2),
+            commonAmount: commonShare.toFixed(2),
+            totalAmount: (areaShare + commonShare).toFixed(2),
         });
     });
 
     // Calculate for room flatmates
     roomFlatmates.forEach((flatmate) => {
-        const share = roomCost * (flatmate.days / roomTotalDays);
+        const areaShare = roomCost * (flatmate.days / roomTotalDays);
+        const commonShare = commonCost * (flatmate.days / totalPersonDays);
         distribution.push({
             name: flatmate.name || "Unnamed",
             location: "Room",
             days: flatmate.days,
-            share: ((flatmate.days / roomTotalDays) * 100).toFixed(2) + "%",
-            amount: share.toFixed(2),
+            areaShare: ((flatmate.days / roomTotalDays) * 100).toFixed(2) + "%",
+            areaAmount: areaShare.toFixed(2),
+            commonAmount: commonShare.toFixed(2),
+            totalAmount: (areaShare + commonShare).toFixed(2),
         });
     });
 
@@ -122,13 +132,14 @@ function calculateBill() {
         billingPeriod,
         totalBill,
         totalUnitsBill,
-        totalUnitsCalculated,
-        unitsMatch,
         hallUnits,
         roomUnits,
+        submeterUnits,
+        commonUnits,
         perUnitPrice,
         hallCost,
         roomCost,
+        commonCost,
         distribution,
     });
 }
@@ -137,41 +148,48 @@ function calculateBill() {
 function displayResults(data) {
     document.getElementById("results").style.display = "block";
 
+    // Display common units section with highlight if common units are significant
+    const commonUnitsHighlight = data.commonUnits > 0 ? "highlight" : "";
+
     let summary = `
-    <h3>Billing Period: ${data.billingPeriod || "Not specified"}</h3>
-    <div class="table-responsive">
-      <table class="summary-table">
-        <tbody>
-          <tr>
-            <th>Total Bill Amount</th>
-            <td>₹${data.totalBill.toFixed(2)}</td>
-            <th>Units Consumed (Bill)</th>
-            <td>${data.totalUnitsBill.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <th>Units Calculated (Submeters)</th>
-            <td>${data.totalUnitsCalculated.toFixed(2)} 
-                ${data.unitsMatch ? "✓" : "✗"}
-            </td>
-            <th>Per Unit Price</th>
-            <td>₹${data.perUnitPrice.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <th>Hall Units</th>
-            <td>${data.hallUnits.toFixed(2)}</td>
-            <th>Room Units</th>
-            <td>${data.roomUnits.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <th>Hall Cost</th>
-            <td>₹${data.hallCost.toFixed(2)}</td>
-            <th>Room Cost</th>
-            <td>₹${data.roomCost.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  `;
+      <h3>Billing Period: ${data.billingPeriod || "Not specified"}</h3>
+      <div class="table-responsive">
+        <table class="summary-table">
+          <tbody>
+            <tr>
+              <th>Total Bill Amount</th>
+              <td>₹${data.totalBill.toFixed(2)}</td>
+              <th>Units Consumed (Bill)</th>
+              <td>${data.totalUnitsBill.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <th>Per Unit Price</th>
+              <td>₹${data.perUnitPrice.toFixed(2)}</td>
+              <th>Submeter Units (Hall + Room)</th>
+              <td>${data.submeterUnits.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <th>Hall Units</th>
+              <td>${data.hallUnits.toFixed(2)}</td>
+              <th>Room Units</th>
+              <td>${data.roomUnits.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <th>Hall Cost</th>
+              <td>₹${data.hallCost.toFixed(2)}</td>
+              <th>Room Cost</th>
+              <td>₹${data.roomCost.toFixed(2)}</td>
+            </tr>
+            <tr class="${commonUnitsHighlight}">
+              <th>Common Units (Bill - Submeters)</th>
+              <td>${data.commonUnits.toFixed(2)}</td>
+              <th>Common Cost</th>
+              <td>₹${data.commonCost.toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
     document.getElementById("calculation-summary").innerHTML = summary;
 
     // Display bill distribution
@@ -184,8 +202,10 @@ function displayResults(data) {
               <td>${item.name}</td>
               <td>${item.location}</td>
               <td>${item.days}</td>
-              <td>${item.share}</td>
-              <td>₹${item.amount}</td>
+              <td>${item.areaShare}</td>
+              <td>₹${item.areaAmount}</td>
+              <td>₹${item.commonAmount}</td>
+              <td><strong>₹${item.totalAmount}</strong></td>
           `;
         tbody.appendChild(row);
     });
@@ -213,6 +233,11 @@ function downloadResults() {
     const clearSavedBtn = clone.querySelector(".clearSaved-btn");
     if (clearSavedBtn) {
         clearSavedBtn.remove();
+    }
+
+    const resultHeader = clone.querySelector(".section-title");
+    if (resultHeader) {
+        resultHeader.remove();
     }
 
     document.body.appendChild(clone);
