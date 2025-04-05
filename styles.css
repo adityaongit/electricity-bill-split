@@ -93,6 +93,16 @@ button:hover {
     background-color: #8e44ad;
 }
 
+.clearSaved-btn {
+    background-color: #d98b8b;
+    display: block;
+    margin: 15px auto;
+}
+
+.clearSaved-btn:hover {
+    background-color: #e74c3c;
+}
+
 /* Layout */
 .flex-container {
     display: flex;
@@ -162,4 +172,17 @@ th {
     .flex-container {
         flex-direction: column;
     }
+}
+
+.highlight {
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.common-units {
+    background-color: #fef9e7;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+    border-left: 4px solid #f39c12;
 }
