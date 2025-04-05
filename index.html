@@ -9,13 +9,22 @@
 </head>
 
 <body>
-    <h1>Flatmate Electricity Bill Splitter</h1>
+    <h1>Electricity Bill Splitter</h1>
 
     <div class="card">
         <h2 class="section-title">Billing Information</h2>
-        <div class="form-group">
-            <label for="billing-period">Billing Period (10th to 10th)</label>
-            <input type="text" id="billing-period" placeholder="e.g., March 10 to April 10" />
+        <div class="form-group date-range">
+            <label>Billing Period</label>
+            <div class="date-inputs">
+                <div class="date-field">
+                    <label for="date-from">From</label>
+                    <input type="date" id="date-from" />
+                </div>
+                <div class="date-field">
+                    <label for="date-to">To</label>
+                    <input type="date" id="date-to" />
+                </div>
+            </div>
         </div>
         <div class="form-group">
             <label for="total-bill">Total Electricity Bill Amount (₹)</label>
@@ -129,7 +138,7 @@
         </div>
 
         <button class="download-btn" onclick="downloadResults()">
-            Download Results
+            Download Summary
         </button>
 
         <button class="clearSaved-btn" onclick="localStorage.removeItem('billSplitterData'); location.reload();">
