@@ -120,6 +120,8 @@
                         <th>Days</th>
                         <th>Share</th>
                         <th>Amount (₹)</th>
+                        <th>Common Amount (₹)</th>
+                        <th>Total Amount (₹)</th>
                     </tr>
                 </thead>
                 <tbody id="distribution-body"></tbody>
@@ -127,7 +129,7 @@
         </div>
 
         <button class="download-btn" onclick="downloadResults()">
-            Download Results as Image
+            Download Results
         </button>
 
         <button class="clearSaved-btn" onclick="localStorage.removeItem('billSplitterData'); location.reload();">
