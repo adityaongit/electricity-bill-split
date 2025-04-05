@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Bill Splitter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            color: #3498db;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .results {
+            background-color: #e8f4f8;
+        }
+        
+        .add-btn {
+            background-color: #2ecc71;
+            margin-right: 10px;
+        }
+        
+        .add-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .remove-btn {
+            background-color: #e74c3c;
+        }
+        
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        
+        .flex-container > div {
+            flex: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .flex-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Flatmate Electricity Bill Splitter</h1>
+    
+    <div class="card">
+        <h2 class="section-title">Billing Information</h2>
+        <div class="form-group">
+            <label for="billing-period">Billing Period (10th to 10th)</label>
+            <input type="text" id="billing-period" placeholder="e.g., March 10 to April 10">
+        </div>
+        <div class="form-group">
+            <label for="total-bill">Total Electricity Bill Amount (₹)</label>
+            <input type="number" id="total-bill" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+            <label for="total-units">Total Units Consumed (as per bill)</label>
+            <input type="number" id="total-units" min="0" step="0.01">
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2 class="section-title">Submeter Readings</h2>
+        <div class="flex-container">
+            <div>
+                <h3>Hall Submeter</h3>
+                <div class="form-group">
+                    <label for="hall-previous">Previous Reading</label>
+                    <input type="number" id="hall-previous" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="hall-current">Current Reading</label>
+                    <input type="number" id="hall-current" min="0" step="0.01">
+                </div>
+            </div>
+            <div>
+                <h3>Room Submeter</h3>
+                <div class="form-group">
+                    <label for="room-previous">Previous Reading</label>
+                    <input type="number" id="room-previous" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="room-current">Current Reading</label>
+                    <input type="number" id="room-current" min="0" step="0.01">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2 class="section-title">Hall Flatmates</h2>
+        <div id="hall-flatmates">
+            <div class="flatmate">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" class="hall-name" placeholder="Flatmate name">
+                </div>
+                <div class="form-group">
+                    <label>Days Stayed</label>
+                    <input type="number" class="hall-days" min="0" max="31" value="30">
+                </div>
+            </div>
+        </div>
+        <button class="add-btn" onclick="addFlatmate('hall')">Add Hall Flatmate</button>
+        <button class="remove-btn" onclick="removeFlatmate('hall')">Remove Last</button>
+    </div>
+    
+    <div class="card">
+        <h2 class="section-title">Room Flatmates</h2>
+        <div id="room-flatmates">
+            <div class="flatmate">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" class="room-name" placeholder="Flatmate name">
+                </div>
+                <div class="form-group">
+                    <label>Days Stayed</label>
+                    <input type="number" class="room-days" min="0" max="31" value="30">
+                </div>
+            </div>
+        </div>
+        <button class="add-btn" onclick="addFlatmate('room')">Add Room Flatmate</button>
+        <button class="remove-btn" onclick="removeFlatmate('room')">Remove Last</button>
+    </div>
+    
+    <div class="card">
+        <button onclick="calculateBill()">Calculate Bill Distribution</button>
+    </div>
+    
+    <div class="card results" id="results" style="display: none;">
+        <h2 class="section-title">Results</h2>
+        
+        <div id="calculation-summary">
+            <!-- Summary will be inserted here -->
+        </div>
+        
+        <h3>Bill Distribution</h3>
+        <table id="bill-distribution">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Days</th>
+                    <th>Share</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody id="distribution-body"></tbody>
+        </table>
+    </div>
+    
+    <script>
+        function addFlatmate(area) {
+            const container = document.getElementById(area + '-flatmates');
+            const flatmateDiv = document.createElement('div');
+            flatmateDiv.className = 'flatmate';
+            
+            flatmateDiv.innerHTML = `
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" class="${area}-name" placeholder="Flatmate name">
+                </div>
+                <div class="form-group">
+                    <label>Days Stayed</label>
+                    <input type="number" class="${area}-days" min="0" max="31" value="30">
+                </div>
+            `;
+            
+            container.appendChild(flatmateDiv);
+        }
+        
+        function removeFlatmate(area) {
+            const container = document.getElementById(area + '-flatmates');
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        function calculateBill() {
+            // Get bill information
+            const totalBill = parseFloat(document.getElementById('total-bill').value) || 0;
+            const totalUnitsBill = parseFloat(document.getElementById('total-units').value) || 0;
+            const billingPeriod = document.getElementById('billing-period').value;
+            
+            // Get submeter readings
+            const hallPrevious = parseFloat(document.getElementById('hall-previous').value) || 0;
+            const hallCurrent = parseFloat(document.getElementById('hall-current').value) || 0;
+            const roomPrevious = parseFloat(document.getElementById('room-previous').value) || 0;
+            const roomCurrent = parseFloat(document.getElementById('room-current').value) || 0;
+            
+            // Calculate units consumed
+            const hallUnits = hallCurrent - hallPrevious;
+            const roomUnits = roomCurrent - roomPrevious;
+            const totalUnitsCalculated = hallUnits + roomUnits;
+            
+            // Verify if total units match the bill
+            const unitsMatch = Math.abs(totalUnitsCalculated - totalUnitsBill) < 0.01;
+            
+            // Calculate per unit price
+            const perUnitPrice = totalBill / totalUnitsCalculated;
+            
+            // Calculate cost for hall and room
+            const hallCost = hallUnits * perUnitPrice;
+            const roomCost = roomUnits * perUnitPrice;
+            
+            // Get flatmates information
+            const hallFlatmates = getFlatmatesInfo('hall');
+            const roomFlatmates = getFlatmatesInfo('room');
+            
+            // Calculate total person-days for each area
+            const hallTotalDays = hallFlatmates.reduce((sum, flatmate) => sum + flatmate.days, 0);
+            const roomTotalDays = roomFlatmates.reduce((sum, flatmate) => sum + flatmate.days, 0);
+            
+            // Calculate individual shares
+            const distribution = [];
+            
+            // Calculate for hall flatmates
+            hallFlatmates.forEach(flatmate => {
+                const share = hallCost * (flatmate.days / hallTotalDays);
+                distribution.push({
+                    name: flatmate.name || 'Unnamed',
+                    location: 'Hall',
+                    days: flatmate.days,
+                    share: (flatmate.days / hallTotalDays * 100).toFixed(2) + '%',
+                    amount: share.toFixed(2)
+                });
+            });
+            
+            // Calculate for room flatmates
+            roomFlatmates.forEach(flatmate => {
+                const share = roomCost * (flatmate.days / roomTotalDays);
+                distribution.push({
+                    name: flatmate.name || 'Unnamed',
+                    location: 'Room',
+                    days: flatmate.days,
+                    share: (flatmate.days / roomTotalDays * 100).toFixed(2) + '%',
+                    amount: share.toFixed(2)
+                });
+            });
+            
+            // Display results
+            displayResults({
+                billingPeriod,
+                totalBill,
+                totalUnitsBill,
+                totalUnitsCalculated,
+                unitsMatch,
+                hallUnits,
+                roomUnits,
+                perUnitPrice,
+                hallCost,
+                roomCost,
+                distribution
+            });
+        }
+        
+        function getFlatmatesInfo(area) {
+            const container = document.getElementById(area + '-flatmates');
+            const names = container.querySelectorAll(`.${area}-name`);
+            const days = container.querySelectorAll(`.${area}-days`);
+            
+            const flatmates = [];
+            for (let i = 0; i < names.length; i++) {
+                flatmates.push({
+                    name: names[i].value,
+                    days: parseInt(days[i].value) || 0
+                });
+            }
+            
+            return flatmates;
+        }
+        
+        function displayResults(data) {
+            document.getElementById('results').style.display = 'block';
+            
+            // Display calculation summary
+            let summary = `
+                <h3>Billing Period: ${data.billingPeriod || 'Not specified'}</h3>
+                <p><strong>Total Bill Amount:</strong> ₹${data.totalBill.toFixed(2)}</p>
+                <p><strong>Units Consumed (Bill):</strong> ${data.totalUnitsBill.toFixed(2)}</p>
+                <p><strong>Units Calculated (Submeters):</strong> ${data.totalUnitsCalculated.toFixed(2)} 
+                   ${data.unitsMatch ? '✓ (matches bill)' : '❌ (discrepancy)'}</p>
+                <p><strong>Hall Units:</strong> ${data.hallUnits.toFixed(2)}</p>
+                <p><strong>Room Units:</strong> ${data.roomUnits.toFixed(2)}</p>
+                <p><strong>Per Unit Price:</strong> ₹${data.perUnitPrice.toFixed(4)}</p>
+                <p><strong>Hall Cost:</strong> ₹${data.hallCost.toFixed(2)}</p>
+                <p><strong>Room Cost:</strong> ₹${data.roomCost.toFixed(2)}</p>
+            `;
+            
+            document.getElementById('calculation-summary').innerHTML = summary;
+            
+            // Display bill distribution
+            const tbody = document.getElementById('distribution-body');
+            tbody.innerHTML = '';
+            
+            data.distribution.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.location}</td>
+                    <td>${item.days}</td>
+                    <td>${item.share}</td>
+                    <td>₹${item.amount}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
