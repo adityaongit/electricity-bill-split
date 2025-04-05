@@ -1,0 +1,143 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+  }
+  
+  h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Card Components */
+  .card {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-title {
+    color: #3498db;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-top: 0;
+  }
+  
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input[type="number"],
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  /* Buttons */
+  button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+  
+  button:hover {
+    background-color: #2980b9;
+  }
+  
+  .add-btn {
+    background-color: #2ecc71;
+    margin-right: 10px;
+  }
+  
+  .add-btn:hover {
+    background-color: #27ae60;
+  }
+  
+  .remove-btn {
+    background-color: #e74c3c;
+  }
+  
+  .remove-btn:hover {
+    background-color: #c0392b;
+  }
+  
+  .download-btn {
+    background-color: #9b59b6;
+    display: block;
+    margin: 15px auto;
+  }
+  
+  .download-btn:hover {
+    background-color: #8e44ad;
+  }
+  
+  /* Layout */
+  .flex-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  .flex-container > div {
+    flex: 1;
+  }
+  
+  /* Table Styles */
+  .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    min-width: 500px; /* Ensures table has a minimum width */
+  }
+  
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+  
+  /* Results Section */
+  .results {
+    background-color: #e8f4f8;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    .flex-container {
+      flex-direction: column;
+    }
+  }
+  
