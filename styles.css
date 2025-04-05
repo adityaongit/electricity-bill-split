@@ -42,12 +42,34 @@ label {
 }
 
 input[type="number"],
-input[type="text"] {
+input[type="text"],
+input[type="date"] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
+}
+
+/* Date Inputs */
+.date-range {
+    margin-bottom: 20px;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 15px;
+}
+
+.date-field {
+    flex: 1;
+}
+
+.date-field label {
+    font-weight: normal;
+    margin-bottom: 3px;
+    font-size: 0.9em;
+    color: #555;
 }
 
 /* Buttons */
@@ -94,13 +116,13 @@ button:hover {
 }
 
 .clearSaved-btn {
-    background-color: #d98b8b;
+    background-color: #e74c3c;
     display: block;
     margin: 15px auto;
 }
 
 .clearSaved-btn:hover {
-    background-color: #e74c3c;
+    background-color: #c0392b;
 }
 
 /* Layout */
@@ -172,6 +194,11 @@ th {
     .flex-container {
         flex-direction: column;
     }
+
+    .date-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 
 .highlight {
@@ -185,4 +212,11 @@ th {
     border-radius: 5px;
     margin-top: 15px;
     border-left: 4px solid #f39c12;
+}
+
+/* Date styling for mobile responsiveness */
+@media (max-width: 450px) {
+    .date-inputs {
+        flex-direction: column;
+    }
 }
