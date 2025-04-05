@@ -42,6 +42,21 @@ function getFlatmatesInfo(area) {
     return flatmates;
 }
 
+// Date formatting helper function
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return date.toLocaleDateString("en-US", options);
+}
+
+// Get month name from date
+function getMonthName(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { month: "short" });
+}
+
 // Main Calculation Function
 function calculateBill() {
     // Get bill information
@@ -49,7 +64,16 @@ function calculateBill() {
         parseFloat(document.getElementById("total-bill").value) || 0;
     const totalUnitsBill =
         parseFloat(document.getElementById("total-units").value) || 0;
-    const billingPeriod = document.getElementById("billing-period").value;
+    const dateFrom = document.getElementById("date-from").value;
+    const dateTo = document.getElementById("date-to").value;
+
+    // Format date for display
+    const formattedDateFrom = formatDate(dateFrom);
+    const formattedDateTo = formatDate(dateTo);
+    const billingPeriod =
+        formattedDateFrom && formattedDateTo
+            ? `${formattedDateFrom} to ${formattedDateTo}`
+            : "Not specified";
 
     // Get submeter readings
     const hallPrevious =
@@ -130,6 +154,8 @@ function calculateBill() {
     // Display results
     displayResults({
         billingPeriod,
+        dateFrom,
+        dateTo,
         totalBill,
         totalUnitsBill,
         hallUnits,
@@ -152,7 +178,7 @@ function displayResults(data) {
     const commonUnitsHighlight = data.commonUnits > 0 ? "highlight" : "";
 
     let summary = `
-      <h3>Billing Period: ${data.billingPeriod || "Not specified"}</h3>
+      <h3>Billing Period: ${data.billingPeriod}</h3>
       <div class="table-responsive">
         <table class="summary-table">
           <tbody>
@@ -214,6 +240,18 @@ function displayResults(data) {
 // Download Results as Image Function
 function downloadResults() {
     const resultsDiv = document.getElementById("results");
+    const dateFrom = document.getElementById("date-from").value;
+    const dateTo = document.getElementById("date-to").value;
+
+    // Generate filename with month info if available
+    let filename = "electricity-bill";
+    if (dateFrom && dateTo) {
+        const fromMonth = getMonthName(dateFrom);
+        const toMonth = getMonthName(dateTo);
+        filename = `electricity-bill-${fromMonth.toLowerCase()}-${toMonth.toLowerCase()}`;
+    } else {
+        filename = `electricity-bill-${new Date().toISOString().slice(0, 10)}`;
+    }
 
     // Create a clean clone of the results section for screenshot
     const clone = resultsDiv.cloneNode(true);
@@ -235,11 +273,6 @@ function downloadResults() {
         clearSavedBtn.remove();
     }
 
-    const resultHeader = clone.querySelector(".section-title");
-    if (resultHeader) {
-        resultHeader.remove();
-    }
-
     document.body.appendChild(clone);
 
     // Use html2canvas to create an image
@@ -252,8 +285,7 @@ function downloadResults() {
         .then(function (canvas) {
             // Create download link
             const link = document.createElement("a");
-            link.download =
-                "electricity-bill-" + new Date().toISOString().slice(0, 10) + ".png";
+            link.download = `${filename}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
 
@@ -271,7 +303,8 @@ document.addEventListener("input", saveFormData);
 
 function saveFormData() {
     const data = {
-        billingPeriod: document.getElementById("billing-period").value,
+        dateFrom: document.getElementById("date-from").value,
+        dateTo: document.getElementById("date-to").value,
         totalBill: document.getElementById("total-bill").value,
         totalUnits: document.getElementById("total-units").value,
         hallPrevious: document.getElementById("hall-previous").value,
@@ -291,7 +324,8 @@ function loadFormData() {
     const data = JSON.parse(localStorage.getItem("billSplitterData"));
     if (!data) return;
 
-    document.getElementById("billing-period").value = data.billingPeriod || "";
+    document.getElementById("date-from").value = data.dateFrom || "";
+    document.getElementById("date-to").value = data.dateTo || "";
     document.getElementById("total-bill").value = data.totalBill || "";
     document.getElementById("total-units").value = data.totalUnits || "";
     document.getElementById("hall-previous").value = data.hallPrevious || "";
