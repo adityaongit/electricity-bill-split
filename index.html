@@ -1,157 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Electricity Bill Splitter</title>
     <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
+</head>
+
+<body>
     <h1>Flatmate Electricity Bill Splitter</h1>
 
     <div class="card">
-      <h2 class="section-title">Billing Information</h2>
-      <div class="form-group">
-        <label for="billing-period">Billing Period (10th to 10th)</label>
-        <input
-          type="text"
-          id="billing-period"
-          placeholder="e.g., March 10 to April 10"
-        />
-      </div>
-      <div class="form-group">
-        <label for="total-bill">Total Electricity Bill Amount (₹)</label>
-        <input type="number" id="total-bill" min="0" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label for="total-units">Total Units Consumed (as per bill)</label>
-        <input type="number" id="total-units" min="0" step="0.01" />
-      </div>
+        <h2 class="section-title">Billing Information</h2>
+        <div class="form-group">
+            <label for="billing-period">Billing Period (10th to 10th)</label>
+            <input type="text" id="billing-period" placeholder="e.g., March 10 to April 10" />
+        </div>
+        <div class="form-group">
+            <label for="total-bill">Total Electricity Bill Amount (₹)</label>
+            <input type="number" id="total-bill" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+            <label for="total-units">Total Units Consumed (as per bill)</label>
+            <input type="number" id="total-units" min="0" step="0.01" />
+        </div>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Submeter Readings</h2>
-      <div class="flex-container">
-        <div>
-          <h3>Hall Submeter</h3>
-          <div class="form-group">
-            <label for="hall-previous">Previous Reading</label>
-            <input type="number" id="hall-previous" min="0" step="0.01" />
-          </div>
-          <div class="form-group">
-            <label for="hall-current">Current Reading</label>
-            <input type="number" id="hall-current" min="0" step="0.01" />
-          </div>
+        <h2 class="section-title">Submeter Readings</h2>
+        <div class="flex-container">
+            <div>
+                <h3>Hall Submeter</h3>
+                <div class="form-group">
+                    <label for="hall-previous">Previous Reading</label>
+                    <input type="number" id="hall-previous" min="0" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label for="hall-current">Current Reading</label>
+                    <input type="number" id="hall-current" min="0" step="0.01" />
+                </div>
+            </div>
+            <div>
+                <h3>Room Submeter</h3>
+                <div class="form-group">
+                    <label for="room-previous">Previous Reading</label>
+                    <input type="number" id="room-previous" min="0" step="0.01" />
+                </div>
+                <div class="form-group">
+                    <label for="room-current">Current Reading</label>
+                    <input type="number" id="room-current" min="0" step="0.01" />
+                </div>
+            </div>
         </div>
-        <div>
-          <h3>Room Submeter</h3>
-          <div class="form-group">
-            <label for="room-previous">Previous Reading</label>
-            <input type="number" id="room-previous" min="0" step="0.01" />
-          </div>
-          <div class="form-group">
-            <label for="room-current">Current Reading</label>
-            <input type="number" id="room-current" min="0" step="0.01" />
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Hall Flatmates</h2>
-      <div id="hall-flatmates">
-        <div class="flatmate">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" class="hall-name" placeholder="Flatmate name" />
-          </div>
-          <div class="form-group">
-            <label>Days Stayed</label>
-            <input
-              type="number"
-              class="hall-days"
-              min="0"
-              max="31"
-              value="30"
-            />
-          </div>
+        <h2 class="section-title">Hall Flatmates</h2>
+        <div id="hall-flatmates">
+            <div class="flatmate">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" class="hall-name" placeholder="Flatmate name" />
+                </div>
+                <div class="form-group">
+                    <label>Days Stayed</label>
+                    <input type="number" class="hall-days" min="0" max="31" value="30" />
+                </div>
+            </div>
         </div>
-      </div>
-      <button class="add-btn" onclick="addFlatmate('hall')">
-        Add Hall Flatmate
-      </button>
-      <button class="remove-btn" onclick="removeFlatmate('hall')">
-        Remove Last
-      </button>
+        <button class="add-btn" onclick="addFlatmate('hall')">
+            Add Hall Flatmate
+        </button>
+        <button class="remove-btn" onclick="removeFlatmate('hall')">
+            Remove Last
+        </button>
     </div>
 
     <div class="card">
-      <h2 class="section-title">Room Flatmates</h2>
-      <div id="room-flatmates">
-        <div class="flatmate">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" class="room-name" placeholder="Flatmate name" />
-          </div>
-          <div class="form-group">
-            <label>Days Stayed</label>
-            <input
-              type="number"
-              class="room-days"
-              min="0"
-              max="31"
-              value="30"
-            />
-          </div>
+        <h2 class="section-title">Room Flatmates</h2>
+        <div id="room-flatmates">
+            <div class="flatmate">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" class="room-name" placeholder="Flatmate name" />
+                </div>
+                <div class="form-group">
+                    <label>Days Stayed</label>
+                    <input type="number" class="room-days" min="0" max="31" value="30" />
+                </div>
+            </div>
         </div>
-      </div>
-      <button class="add-btn" onclick="addFlatmate('room')">
-        Add Room Flatmate
-      </button>
-      <button class="remove-btn" onclick="removeFlatmate('room')">
-        Remove Last
-      </button>
+        <button class="add-btn" onclick="addFlatmate('room')">
+            Add Room Flatmate
+        </button>
+        <button class="remove-btn" onclick="removeFlatmate('room')">
+            Remove Last
+        </button>
     </div>
 
     <div class="card">
-      <button onclick="calculateBill()">Calculate Bill Distribution</button>
+        <button onclick="calculateBill()">Calculate Bill Distribution</button>
     </div>
 
     <div class="card results" id="results" style="display: none">
-      <h2 class="section-title">Results</h2>
+        <h2 class="section-title">Results</h2>
 
-      <div id="calculation-summary">
-        <!-- Summary will be inserted here -->
-      </div>
+        <div id="calculation-summary">
+            <!-- Summary will be inserted here -->
+        </div>
 
-      <h3>Bill Distribution</h3>
-      <div class="table-responsive">
-        <table id="bill-distribution">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Days</th>
-              <th>Share</th>
-              <th>Amount (₹)</th>
-            </tr>
-          </thead>
-          <tbody id="distribution-body"></tbody>
-        </table>
-      </div>
+        <h3>Bill Distribution</h3>
+        <div class="table-responsive">
+            <table id="bill-distribution">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Days</th>
+                        <th>Share</th>
+                        <th>Amount (₹)</th>
+                    </tr>
+                </thead>
+                <tbody id="distribution-body"></tbody>
+            </table>
+        </div>
 
-      <button class="download-btn" onclick="downloadResults()">
-        Download Results as Image
-      </button>
+        <button class="download-btn" onclick="downloadResults()">
+            Download Results as Image
+        </button>
 
-      <button
-        onclick="localStorage.removeItem('billSplitterData'); location.reload();"
-      >
-        Clear Saved Data
-      </button>
+        <button class="clearSaved-btn" onclick="localStorage.removeItem('billSplitterData'); location.reload();">
+            Clear Saved Data
+        </button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
+
 </html>
