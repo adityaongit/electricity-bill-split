@@ -273,6 +273,11 @@ function downloadResults() {
         clearSavedBtn.remove();
     }
 
+    const resultsHeader = clone.querySelector(".section-title");
+    if (resultsHeader) {
+        resultsHeader.remove();
+    }
+
     document.body.appendChild(clone);
 
     // Use html2canvas to create an image
