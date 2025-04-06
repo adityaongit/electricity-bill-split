@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://electricity-bill-split.vercel.app/sitemap.xml
