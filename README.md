@@ -66,10 +66,10 @@ A web application that helps roommates and flatmates fairly split electricity bi
 
 ```
 /
-├── index.html           # Main HTML file
-├── styles.css           # CSS styles
-├── script.js            # JavaScript functionality
 ├── public/              # Static assets
 │   └── favicons/        # Favicon files for various platforms
+│   ├── index.html       # Main HTML file
+│   ├── styles.css       # CSS styles
+│   ├── script.js        # JavaScript functionality
 └── README.md            # Project documentation
 ```
