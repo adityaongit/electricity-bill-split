@@ -5,15 +5,15 @@ function addFlatmate(area) {
     flatmateDiv.className = "flatmate";
 
     flatmateDiv.innerHTML = `
-            <div class="form-group">
-                <label>Name</label>
-                <input type="text" class="${area}-name" placeholder="Flatmate name">
-            </div>
-            <div class="form-group">
-                <label>Days Stayed</label>
-                <input type="number" class="${area}-days" min="0" max="31" value="30">
-            </div>
-        `;
+          <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="${area}-name" placeholder="Flatmate name">
+          </div>
+          <div class="form-group">
+              <label>Days Stayed</label>
+              <input type="number" class="${area}-days" min="0" max="31" value="30">
+          </div>
+      `;
 
     container.appendChild(flatmateDiv);
 }
@@ -177,45 +177,67 @@ function displayResults(data) {
     // Display common units section with highlight if common units are significant
     const commonUnitsHighlight = data.commonUnits > 0 ? "highlight" : "";
 
+    // Get submeter readings
+    const hallPrevious =
+        parseFloat(document.getElementById("hall-previous").value) || 0;
+    const hallCurrent =
+        parseFloat(document.getElementById("hall-current").value) || 0;
+    const roomPrevious =
+        parseFloat(document.getElementById("room-previous").value) || 0;
+    const roomCurrent =
+        parseFloat(document.getElementById("room-current").value) || 0;
+
     let summary = `
-      <h3>Billing Period: ${data.billingPeriod}</h3>
-      <div class="table-responsive">
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <th>Total Bill Amount</th>
-              <td>₹${data.totalBill.toFixed(2)}</td>
-              <th>Units Consumed (Bill)</th>
-              <td>${data.totalUnitsBill.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <th>Per Unit Price</th>
-              <td>₹${data.perUnitPrice.toFixed(2)}</td>
-              <th>Submeter Units (Hall + Room)</th>
-              <td>${data.submeterUnits.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <th>Hall Units</th>
-              <td>${data.hallUnits.toFixed(2)}</td>
-              <th>Room Units</th>
-              <td>${data.roomUnits.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <th>Hall Cost</th>
-              <td>₹${data.hallCost.toFixed(2)}</td>
-              <th>Room Cost</th>
-              <td>₹${data.roomCost.toFixed(2)}</td>
-            </tr>
-            <tr class="${commonUnitsHighlight}">
-              <th>Common Units (Bill - Submeters)</th>
-              <td>${data.commonUnits.toFixed(2)}</td>
-              <th>Common Cost</th>
-              <td>₹${data.commonCost.toFixed(2)}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    `;
+    <h3>Billing Period: ${data.billingPeriod}</h3>
+    <div class="table-responsive">
+      <table class="summary-table">
+        <tbody>
+          <tr>
+            <th>Total Bill Amount</th>
+            <td>₹${data.totalBill.toFixed(2)}</td>
+            <th>Units Consumed (Bill)</th>
+            <td>${data.totalUnitsBill.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <th>Per Unit Price</th>
+            <td>₹${data.perUnitPrice.toFixed(2)}</td>
+            <th>Submeter Units (Hall + Room)</th>
+            <td>${data.submeterUnits.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <th>Hall Submeter (Previous)</th>
+            <td>${hallPrevious.toFixed(2)}</td>
+            <th>Hall Submeter (Current)</th>
+            <td>${hallCurrent.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <th>Room Submeter (Previous)</th>
+            <td>${roomPrevious.toFixed(2)}</td>
+            <th>Room Submeter (Current)</th>
+            <td>${roomCurrent.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <th>Hall Units</th>
+            <td>${data.hallUnits.toFixed(2)}</td>
+            <th>Room Units</th>
+            <td>${data.roomUnits.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <th>Hall Cost</th>
+            <td>₹${data.hallCost.toFixed(2)}</td>
+            <th>Room Cost</th>
+            <td>₹${data.roomCost.toFixed(2)}</td>
+          </tr>
+          <tr class="${commonUnitsHighlight}">
+            <th>Common Units (Bill - Submeters)</th>
+            <td>${data.commonUnits.toFixed(2)}</td>
+            <th>Common Cost</th>
+            <td>₹${data.commonCost.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
     document.getElementById("calculation-summary").innerHTML = summary;
 
     // Display bill distribution
@@ -225,14 +247,14 @@ function displayResults(data) {
     data.distribution.forEach((item) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-              <td>${item.name}</td>
-              <td>${item.location}</td>
-              <td>${item.days}</td>
-              <td>${item.areaShare}</td>
-              <td>₹${item.areaAmount}</td>
-              <td>₹${item.commonAmount}</td>
-              <td><strong>₹${item.totalAmount}</strong></td>
-          `;
+            <td>${item.name}</td>
+            <td>${item.location}</td>
+            <td>${item.days}</td>
+            <td>${item.areaShare}</td>
+            <td>₹${item.areaAmount}</td>
+            <td>₹${item.commonAmount}</td>
+            <td><strong>₹${item.totalAmount}</strong></td>
+        `;
         tbody.appendChild(row);
     });
 }
