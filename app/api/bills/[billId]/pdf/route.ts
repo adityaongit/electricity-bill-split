@@ -1,0 +1,68 @@
+import { ObjectId } from "mongodb"
+import type { DocumentProps } from "@react-pdf/renderer"
+import { renderToStream } from "@react-pdf/renderer"
+import React, { createElement } from "react"
+import { getDb } from "@/lib/db"
+import { getSessionOrUnauthorized, errorResponse } from "@/lib/api-utils"
+import { BillPdfDocument } from "@/components/export/bill-pdf-document"
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ billId: string }> }
+) {
+  const { error } = await getSessionOrUnauthorized()
+  if (error) return error
+
+  const { billId } = await params
+  const db = getDb()
+
+  const [bill, splits] = await Promise.all([
+    db.collection("bills").findOne({ _id: new ObjectId(billId) }),
+    db.collection("bill_splits").find({ billId: new ObjectId(billId) }).toArray(),
+  ])
+
+  if (!bill) return errorResponse("Bill not found", 404)
+
+  const billData = {
+    billingPeriod: {
+      from: (bill.billingPeriod.from as Date).toISOString(),
+      to: (bill.billingPeriod.to as Date).toISOString(),
+    },
+    totalBill: bill.totalBill as number,
+    totalUnits: bill.totalUnits as number,
+    submeterReadings: bill.submeterReadings as {
+      hall: { previous: number; current: number }
+      room: { previous: number; current: number }
+    },
+    computed: bill.computed as {
+      hallUnits: number
+      roomUnits: number
+      commonUnits: number
+      perUnitPrice: number
+      hallCost: number
+      roomCost: number
+      commonCost: number
+    },
+    splits: splits.map((s) => ({
+      roommateName: s.roommateName as string,
+      area: s.area as string,
+      daysStayed: s.daysStayed as number,
+      areaSharePercent: s.areaSharePercent as number,
+      areaCost: s.areaCost as number,
+      commonCost: s.commonCost as number,
+      totalAmount: s.totalAmount as number,
+    })),
+  }
+
+  const element = createElement(BillPdfDocument, { bill: billData })
+  const stream = await renderToStream(
+    element as unknown as React.ReactElement<DocumentProps>
+  )
+
+  return new Response(stream as unknown as ReadableStream, {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="bill-${billId}.pdf"`,
+    },
+  })
+}
