@@ -12,7 +12,12 @@ export const createFlatSchema = z.object({
     .min(1, "At least one area is required"),
 })
 
-export const updateFlatSchema = createFlatSchema.partial()
+const UPI_ID_REGEX = /^[a-zA-Z0-9._-]{3,30}@[a-zA-Z0-9.-]{2,30}$/
+
+export const updateFlatSchema = createFlatSchema.partial().extend({
+  upiId: z.string().regex(UPI_ID_REGEX, "Invalid UPI ID format (e.g., name@upi)").optional(),
+  upiPayeeName: z.string().min(1).max(50).optional(),
+})
 
 export const createRoommateSchema = z.object({
   flatId: z.string().min(1, "Flat ID is required"),

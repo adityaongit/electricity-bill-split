@@ -19,8 +19,9 @@ import { Separator } from "@/components/ui/separator"
 import { ExportActions } from "@/components/export/export-actions"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
 import { getIndividualWhatsAppUrl } from "@/lib/whatsapp"
-import type { BillDetailData, RoommateData } from "@/lib/data-service"
+import type { BillDetailData, RoommateData, FlatData } from "@/lib/data-service"
 
 export default function BillDetailPage({
   params,
@@ -29,19 +30,27 @@ export default function BillDetailPage({
 }) {
   const { billId } = use(params)
   const { service } = useDataService()
+  const { currency } = useCurrency()
   const [bill, setBill] = useState<BillDetailData | null>(null)
+  const [flat, setFlat] = useState<FlatData | null>(null)
   const [roommates, setRoommates] = useState<RoommateData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    service.getBill(billId).then(async (data) => {
-      setBill(data)
-      if (data) {
-        const mates = await service.getRoommates(data.flatId)
+    async function loadData() {
+      const billData = await service.getBill(billId)
+      setBill(billData)
+      if (billData) {
+        const [mates, flatData] = await Promise.all([
+          service.getRoommates(billData.flatId),
+          service.getFlats().then(flats => flats.find(f => f._id === billData.flatId) || null)
+        ])
         setRoommates(mates)
+        setFlat(flatData)
       }
       setLoading(false)
-    })
+    }
+    loadData()
   }, [billId, service])
 
   const getRoommatePhone = (name: string) => {
@@ -106,7 +115,7 @@ export default function BillDetailPage({
         <Card className="flex items-center justify-center">
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">Total Bill</p>
-            <p className="text-2xl font-bold">{formatCurrency(bill.totalBill)}</p>
+            <p className="text-2xl font-bold">{formatCurrency(bill.totalBill, currency)}</p>
           </CardContent>
         </Card>
         <Card className="flex items-center justify-center">
@@ -119,7 +128,7 @@ export default function BillDetailPage({
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">Per Unit Price</p>
             <p className="text-2xl font-bold">
-              {formatCurrency(bill.computed.perUnitPrice)}
+              {formatCurrency(bill.computed.perUnitPrice, currency)}
             </p>
           </CardContent>
         </Card>
@@ -154,7 +163,7 @@ export default function BillDetailPage({
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Cost</p>
-                  <p className="font-bold">{formatCurrency(bill.computed.hallCost)}</p>
+                  <p className="font-bold">{formatCurrency(bill.computed.hallCost, currency)}</p>
                 </div>
               </div>
             </div>
@@ -174,14 +183,14 @@ export default function BillDetailPage({
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Cost</p>
-                  <p className="font-bold">{formatCurrency(bill.computed.roomCost)}</p>
+                  <p className="font-bold">{formatCurrency(bill.computed.roomCost, currency)}</p>
                 </div>
               </div>
             </div>
             <div className="rounded-lg bg-muted/50 p-3 text-center">
               <p className="text-sm text-muted-foreground">Common Units</p>
               <p className="text-lg font-bold">{bill.computed.commonUnits} units</p>
-              <p className="text-sm font-medium">{formatCurrency(bill.computed.commonCost)}</p>
+              <p className="text-sm font-medium">{formatCurrency(bill.computed.commonCost, currency)}</p>
             </div>
           </div>
 
@@ -203,14 +212,14 @@ export default function BillDetailPage({
                   <TableCell className="text-right">{bill.submeterReadings.hall.previous}</TableCell>
                   <TableCell className="text-right">{bill.submeterReadings.hall.current}</TableCell>
                   <TableCell className="text-right font-medium">{bill.computed.hallUnits}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.hallCost)}</TableCell>
+                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.hallCost, currency)}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">Room</TableCell>
                   <TableCell className="text-right">{bill.submeterReadings.room.previous}</TableCell>
                   <TableCell className="text-right">{bill.submeterReadings.room.current}</TableCell>
                   <TableCell className="text-right font-medium">{bill.computed.roomUnits}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.roomCost)}</TableCell>
+                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.roomCost, currency)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -235,7 +244,7 @@ export default function BillDetailPage({
                       <p className="text-sm text-muted-foreground capitalize">{s.area}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold">{formatCurrency(s.totalAmount)}</p>
+                      <p className="text-xl font-bold">{formatCurrency(s.totalAmount, currency)}</p>
                     </div>
                   </div>
                   <Separator />
@@ -245,16 +254,16 @@ export default function BillDetailPage({
                       <p className="font-medium">{s.daysStayed}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Share</p>
+                      <p className="text-muted-foreground">Area Share</p>
                       <p className="font-medium">{s.areaSharePercent}%</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Area Cost</p>
-                      <p className="font-medium">{formatCurrency(s.areaCost)}</p>
+                      <p className="font-medium">{formatCurrency(s.areaCost, currency)}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Common</p>
-                      <p className="font-medium">{formatCurrency(s.commonCost)}</p>
+                      <p className="font-medium">{formatCurrency(s.commonCost, currency)}</p>
                     </div>
                   </div>
                   {phone ? (
@@ -262,7 +271,13 @@ export default function BillDetailPage({
                       variant="outline"
                       className="w-full text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950"
                       onClick={() => {
-                        const url = getIndividualWhatsAppUrl(bill, phone)
+                        const url = getIndividualWhatsAppUrl(
+                          bill,
+                          phone,
+                          flat?.upiId,
+                          flat?.upiPayeeName,
+                          currency
+                        )
                         window.open(url, "_blank")
                       }}
                     >
@@ -290,7 +305,7 @@ export default function BillDetailPage({
                   <TableHead>Name</TableHead>
                   <TableHead>Area</TableHead>
                   <TableHead className="text-right">Days</TableHead>
-                  <TableHead className="text-right">Share</TableHead>
+                  <TableHead className="text-right">Area Share</TableHead>
                   <TableHead className="text-right">Area Cost</TableHead>
                   <TableHead className="text-right">Common</TableHead>
                   <TableHead className="text-right">Total</TableHead>
@@ -306,10 +321,10 @@ export default function BillDetailPage({
                       <TableCell className="capitalize">{s.area}</TableCell>
                       <TableCell className="text-right">{s.daysStayed}</TableCell>
                       <TableCell className="text-right">{s.areaSharePercent}%</TableCell>
-                      <TableCell className="text-right">{formatCurrency(s.areaCost)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(s.commonCost)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(s.areaCost, currency)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(s.commonCost, currency)}</TableCell>
                       <TableCell className="text-right font-bold">
-                        {formatCurrency(s.totalAmount)}
+                        {formatCurrency(s.totalAmount, currency)}
                       </TableCell>
                       <TableCell className="text-right">
                         {phone ? (
@@ -318,7 +333,12 @@ export default function BillDetailPage({
                             size="sm"
                             className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950"
                             onClick={() => {
-                              const url = getIndividualWhatsAppUrl(bill, phone)
+                              const url = getIndividualWhatsAppUrl(
+                                bill,
+                                phone,
+                                flat?.upiId,
+                                flat?.upiPayeeName
+                              )
                               window.open(url, "_blank")
                             }}
                           >

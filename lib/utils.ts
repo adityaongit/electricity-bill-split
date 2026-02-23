@@ -1,14 +1,17 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { DEFAULT_CURRENCY, getCurrencyConfig, type CurrencyCode } from "./currency"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
+export function formatCurrency(amount: number, currencyCode?: CurrencyCode): string {
+  const currency = currencyCode ?? DEFAULT_CURRENCY
+  const config = getCurrencyConfig(currency)
+  return new Intl.NumberFormat(config.locale, {
     style: "currency",
-    currency: "INR",
+    currency: config.code,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount)

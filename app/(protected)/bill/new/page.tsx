@@ -30,11 +30,13 @@ import { calculateBill } from "@/lib/bill-calculator"
 import type { BillResult, RoommateInput } from "@/lib/bill-calculator"
 import { formatCurrency } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
 import type { FlatData, RoommateData } from "@/lib/data-service"
 
 export default function NewBillPage() {
   const router = useRouter()
   const { service } = useDataService()
+  const { currency } = useCurrency()
   const [flats, setFlats] = useState<FlatData[]>([])
   const [selectedFlat, setSelectedFlat] = useState<FlatData | null>(null)
   const [roommates, setRoommates] = useState<RoommateData[]>([])
@@ -397,7 +399,7 @@ export default function NewBillPage() {
                     <div>
                       <p className="text-muted-foreground">Per Unit Price</p>
                       <p className="font-medium">
-                        {formatCurrency(preview.computed.perUnitPrice)}
+                        {formatCurrency(preview.computed.perUnitPrice, currency)}
                       </p>
                     </div>
                     <div>
@@ -417,13 +419,13 @@ export default function NewBillPage() {
                     <div>
                       <p className="text-muted-foreground">Hall Cost</p>
                       <p className="font-medium">
-                        {formatCurrency(preview.computed.hallCost)}
+                        {formatCurrency(preview.computed.hallCost, currency)}
                       </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Room Cost</p>
                       <p className="font-medium">
-                        {formatCurrency(preview.computed.roomCost)}
+                        {formatCurrency(preview.computed.roomCost, currency)}
                       </p>
                     </div>
                   </div>
@@ -435,7 +437,7 @@ export default function NewBillPage() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Area</TableHead>
-                        <TableHead className="text-right">Share</TableHead>
+                        <TableHead className="text-right">Area Share</TableHead>
                         <TableHead className="text-right">Total</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -450,7 +452,7 @@ export default function NewBillPage() {
                             {s.areaSharePercent}%
                           </TableCell>
                           <TableCell className="text-right font-semibold">
-                            {formatCurrency(s.totalAmount)}
+                            {formatCurrency(s.totalAmount, currency)}
                           </TableCell>
                         </TableRow>
                       ))}

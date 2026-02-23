@@ -10,6 +10,8 @@ export interface Flat {
   ownerId: string
   name: string
   areas: FlatArea[]
+  upiId?: string
+  upiPayeeName?: string
   createdAt: Date
   updatedAt: Date
 }

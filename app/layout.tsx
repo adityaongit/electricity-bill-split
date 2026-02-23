@@ -3,8 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { JsonLd } from "@/components/seo/json-ld"
-import { FaqSchema } from "@/components/seo/faq-schema"
-import { HowToSchema } from "@/components/seo/howto-schema"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,35 +15,42 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://splitwatt.vercel.app"),
+  metadataBase: new URL("https://electricity-bill-split.vercel.app"),
   title: {
-    default: "Electricity Bill Splitter - Free Calculator for Roommates | SplitWatt",
-    template: "%s | SplitWatt",
+    default: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - SplitWatt",
+    template: "%s | SplitWatt - Electricity Bill Splitter",
   },
   description:
-    "Split electricity bills fairly using submeter readings. Free calculator for roommates with common areas, day-based sharing, and PDF/WhatsApp export.",
+    "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
   keywords: [
     "electricity bill splitter",
-    "electric bill split",
-    "roommate bill split",
-    "submeter calculator",
-    "flatmate bill sharing",
-    "common area electricity split",
-    "electricity bill calculator",
-    "roommate utility split",
-    "paying guest bill split",
+    "utility bill calculator",
+    "roommate bill sharing",
+    "submeter readings calculator",
+    "flatmates bill split",
   ],
   authors: [{ name: "SplitWatt" }],
   creator: "SplitWatt",
   publisher: "SplitWatt",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/favicons/site.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://splitwatt.vercel.app",
-    siteName: "SplitWatt",
-    title: "Electricity Bill Splitter - Free Calculator for Roommates",
+    url: "https://electricity-bill-split.vercel.app",
+    siteName: "SplitWatt - Electricity Bill Splitter",
+    title: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly",
     description:
-      "Split electricity bills fairly with submeter readings. Free, instant, no signup required.",
+      "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
     images: [
       {
         url: "/og-image.png",
@@ -57,8 +62,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Electricity Bill Splitter - Free for Roommates",
-    description: "Fair bill splitting with submeter readings. Export to PDF/WhatsApp.",
+    title: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - SplitWatt",
+    description: "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
     images: ["/twitter-og.png"],
   },
   robots: {
@@ -76,7 +81,7 @@ export const metadata: Metadata = {
     google: "raoATIK68dRpqbuNs0ZX2Z9FLbtb0B06EK8rBhykNng",
   },
   alternates: {
-    canonical: "https://splitwatt.vercel.app",
+    canonical: "https://electricity-bill-split.vercel.app",
   },
 }
 
@@ -88,9 +93,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
+        <meta name="theme-color" content="#4361ee" />
         <JsonLd />
-        <FaqSchema />
-        <HowToSchema />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}

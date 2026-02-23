@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
 import type { BillData } from "@/lib/data-service"
 
 interface Pagination {
@@ -19,6 +20,7 @@ interface Pagination {
 
 export default function BillHistoryPage() {
   const { service } = useDataService()
+  const { currency } = useCurrency()
   const [bills, setBills] = useState<BillData[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [loading, setLoading] = useState(true)
@@ -84,7 +86,7 @@ export default function BillHistoryPage() {
                           {formatDateShort(bill.billingPeriod.to)}
                         </p>
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          {bill.totalUnits} units · {formatCurrency(bill.computed.perUnitPrice)}/unit
+                          {bill.totalUnits} units · {formatCurrency(bill.computed.perUnitPrice, currency)}/unit
                         </p>
                       </div>
                       <span
@@ -105,7 +107,7 @@ export default function BillHistoryPage() {
                     <div className="flex items-center justify-between pt-2 border-t">
                       <p className="text-sm text-muted-foreground">Total</p>
                       <p className="text-xl font-bold">
-                        {formatCurrency(bill.totalBill)}
+                        {formatCurrency(bill.totalBill, currency)}
                       </p>
                     </div>
                   </CardContent>

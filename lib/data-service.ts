@@ -2,6 +2,8 @@ export interface FlatData {
   _id: string
   name: string
   areas: { slug: string; label: string }[]
+  upiId?: string
+  upiPayeeName?: string
 }
 
 export interface RoommateData {
@@ -80,6 +82,7 @@ export interface CreateBillInput {
 export interface DataService {
   getFlats(): Promise<FlatData[]>
   createFlat(name: string): Promise<FlatData>
+  updateFlat(id: string, data: { upiId?: string; upiPayeeName?: string }): Promise<FlatData>
   deleteFlat(id: string): Promise<void>
 
   getRoommates(flatId: string): Promise<RoommateData[]>
@@ -91,5 +94,5 @@ export interface DataService {
   getBill(billId: string): Promise<BillDetailData | null>
   createBill(input: CreateBillInput): Promise<{ _id: string }>
 
-  generatePdfBlob(billId: string): Promise<Blob>
+  generatePdfBlob(billId: string, currency?: string): Promise<Blob>
 }

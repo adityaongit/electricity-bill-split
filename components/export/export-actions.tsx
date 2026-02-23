@@ -5,6 +5,7 @@ import { toPng } from "html-to-image"
 import { Button } from "@/components/ui/button"
 import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
 import { toast } from "sonner"
 import { generateBillFilename } from "@/lib/utils"
 
@@ -46,12 +47,13 @@ export function ExportActions({
   imageTargetId = "bill-detail",
 }: ExportActionsProps) {
   const { service } = useDataService()
+  const { currency } = useCurrency()
   const [exporting, setExporting] = useState<string | null>(null)
 
   async function handlePdfDownload() {
     setExporting("pdf")
     try {
-      const blob = await service.generatePdfBlob(billId)
+      const blob = await service.generatePdfBlob(billId, currency)
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
@@ -104,7 +106,7 @@ export function ExportActions({
   }
 
   function handleWhatsApp() {
-    const url = getWhatsAppUrl(bill)
+    const url = getWhatsAppUrl(bill, currency)
     window.open(url, "_blank")
   }
 

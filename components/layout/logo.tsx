@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils"
 export function Logo({
   href = "/",
   className,
+  variant = "full",
 }: {
   href?: string
   className?: string
+  variant?: "full" | "compact" | "icon-only"
 }) {
   return (
     <Link
@@ -17,9 +19,11 @@ export function Logo({
       <span className="flex items-center justify-center h-7 w-7 rounded-lg bg-primary text-primary-foreground transition-transform group-hover:scale-105">
         <Zap className="h-4 w-4 fill-current" />
       </span>
-      <span className="tracking-tight">
-        Split<span className="text-primary">Watt</span>
-      </span>
+      {variant !== "icon-only" && (
+        <span className="tracking-tight">
+          Split<span className="text-primary">Watt</span>
+        </span>
+      )}
     </Link>
   )
 }

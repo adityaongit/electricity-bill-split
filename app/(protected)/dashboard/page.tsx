@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
 
 interface DashboardData {
   flat: { _id: string; name: string } | null
@@ -24,6 +25,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const { service } = useDataService()
+  const { currency } = useCurrency()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -98,7 +100,7 @@ export default function DashboardPage() {
         <Card className="flex items-center justify-center">
           <CardContent className="text-center">
             <p className="text-sm text-muted-foreground">Total Spent</p>
-            <p className="text-3xl font-bold">{formatCurrency(data.totalSpent)}</p>
+            <p className="text-3xl font-bold">{formatCurrency(data.totalSpent, currency)}</p>
           </CardContent>
         </Card>
         <Card className="flex items-center justify-center">
@@ -106,7 +108,7 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">Latest Bill</p>
             <p className="text-3xl font-bold">
               {data.recentBill
-                ? formatCurrency(data.recentBill.totalBill)
+                ? formatCurrency(data.recentBill.totalBill, currency)
                 : "—"}
             </p>
           </CardContent>
@@ -116,7 +118,7 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">Avg. Per Unit</p>
             <p className="text-3xl font-bold">
               {data.recentBill
-                ? formatCurrency(data.recentBill.computed.perUnitPrice)
+                ? formatCurrency(data.recentBill.computed.perUnitPrice, currency)
                 : "—"}
             </p>
           </CardContent>
@@ -137,7 +139,7 @@ export default function DashboardPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {data.recentBill.totalUnits} units |{" "}
-                  {formatCurrency(data.recentBill.totalBill)}
+                  {formatCurrency(data.recentBill.totalBill, currency)}
                 </p>
               </div>
               <Button variant="outline" asChild>

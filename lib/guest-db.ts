@@ -7,6 +7,8 @@ interface GuestDBSchema extends DBSchema {
       _id: string
       name: string
       areas: { slug: string; label: string }[]
+      upiId?: string
+      upiPayeeName?: string
       createdAt: string
       updatedAt: string
     }
@@ -69,24 +71,46 @@ interface GuestDBSchema extends DBSchema {
     }
     indexes: { billId: string }
   }
+  user_settings: {
+    key: string
+    value: {
+      key: string
+      value: string
+      updatedAt: string
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<GuestDBSchema>> | null = null
 
 export function openGuestDb() {
   if (!dbPromise) {
-    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 1, {
-      upgrade(db) {
-        db.createObjectStore("flats", { keyPath: "_id" })
+    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 3, {
+      upgrade(db, oldVersion) {
+        // Version 1 schema
+        if (oldVersion < 1) {
+          db.createObjectStore("flats", { keyPath: "_id" })
 
-        const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
-        roommateStore.createIndex("flatId", "flatId")
+          const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
+          roommateStore.createIndex("flatId", "flatId")
 
-        const billStore = db.createObjectStore("bills", { keyPath: "_id" })
-        billStore.createIndex("flatId", "flatId")
+          const billStore = db.createObjectStore("bills", { keyPath: "_id" })
+          billStore.createIndex("flatId", "flatId")
 
-        const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
-        splitStore.createIndex("billId", "billId")
+          const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
+          splitStore.createIndex("billId", "billId")
+        }
+
+        // Version 2: Add UPI fields to flats
+        if (oldVersion < 2) {
+          // IndexedDB automatically handles new optional fields
+          // No schema changes needed, just version bump
+        }
+
+        // Version 3: Add user_settings store
+        if (oldVersion < 3) {
+          db.createObjectStore("user_settings", { keyPath: "key" })
+        }
       },
     })
   }

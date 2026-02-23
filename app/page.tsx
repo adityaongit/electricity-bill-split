@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
-import { faqs } from "@/components/seo/faq-schema"
+import { FaqSchema, faqs } from "@/components/seo/faq-schema"
+import { HowToSchema } from "@/components/seo/howto-schema"
 import { FaqAccordion } from "@/components/faq-accordion"
 import {
   BarChart3,
@@ -16,7 +18,9 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="content-lines flex min-h-screen flex-col">
+      <FaqSchema />
+      <HowToSchema />
       <Header />
 
       <main className="flex-1">
@@ -31,12 +35,13 @@ export default function LandingPage() {
               Use submeter readings to calculate each roommate&apos;s share accurately.
               Handle common area costs, track billing history, and export results in seconds.
             </p>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-0">
               <Link href="/signup">
                 <Button size="lg" className="min-w-[180px]">
                   Start Splitting Free
                 </Button>
               </Link>
+              <Separator dashed orientation="vertical" className="h-10 mx-4 hidden sm:block" />
               <Link href="#how-it-works">
                 <Button variant="outline" size="lg" className="min-w-[180px]">
                   See How It Works
@@ -139,8 +144,8 @@ export default function LandingPage() {
               Three simple steps to fair electricity bills.
             </p>
 
-            <div className="mt-12 grid gap-8 sm:grid-cols-3">
-              <div className="text-center">
+            <div className="mt-12 flex flex-col items-center gap-8 md:flex-row md:justify-between">
+              <div className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   1
                 </div>
@@ -150,7 +155,9 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="text-center">
+              <Separator dashed orientation="vertical" className="h-24 hidden md:block" />
+
+              <div className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   2
                 </div>
@@ -160,7 +167,9 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="text-center">
+              <Separator dashed orientation="vertical" className="h-24 hidden md:block" />
+
+              <div className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   3
                 </div>
@@ -173,8 +182,11 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Stripe-style dashed divider */}
+        <Separator dashed className="my-8" />
+
         {/* CTA */}
-        <section className="border-t bg-muted/30 py-20">
+        <section className="bg-muted/30 py-20">
           <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
             <h2 className="text-3xl font-bold">Ready to split bills the fair way?</h2>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
@@ -191,7 +203,8 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section - Critical for SEO & AI Overview */}
-        <section id="faq" className="border-t bg-muted/20 py-20">
+        <Separator dashed className="my-8" />
+        <section id="faq" className="bg-muted/20 py-20">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <h2 className="text-center text-3xl font-bold tracking-tight mb-3">
               Frequently Asked Questions

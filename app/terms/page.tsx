@@ -1,12 +1,17 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import { FileText, UserCheck, AlertTriangle, Scale, Gift, Code, Mail, Ban, Shield } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Terms of Service",
   description: "SplitWatt terms of service - Free and open source electricity bill splitter.",
+  alternates: {
+    canonical: "https://electricity-bill-split.vercel.app/terms",
+  },
 }
 
 const sections = [
@@ -55,6 +60,7 @@ export default function TermsPage() {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+          <Breadcrumbs items={[{ name: "Terms of Service", href: "/terms" }]} />
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">

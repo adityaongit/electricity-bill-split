@@ -1,12 +1,17 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import { Shield, Lock, Eye, Database, User, Cookie, AlertCircle, Mail, Code } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "SplitWatt privacy policy - We respect your privacy and don't sell your data.",
+  alternates: {
+    canonical: "https://electricity-bill-split.vercel.app/privacy",
+  },
 }
 
 const sections = [
@@ -62,6 +67,7 @@ export default function PrivacyPage() {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+          <Breadcrumbs items={[{ name: "Privacy Policy", href: "/privacy" }]} />
           {/* Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-6">

@@ -5,19 +5,56 @@ import { useSession } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { useDataService } from "@/lib/guest-context"
+import { useCurrency } from "@/lib/currency-context"
+import { SUPPORTED_CURRENCIES } from "@/lib/currency"
 import type { FlatData } from "@/lib/data-service"
-import { Home, Trash2, Plus, User, Mail } from "lucide-react"
+import { Home, Trash2, Plus, User, Mail, CreditCard } from "lucide-react"
+
+interface UpiDialogState {
+  open: boolean
+  flatId: string | null
+  flatName: string
+  upiId: string
+  upiPayeeName: string
+}
 
 export default function SettingsPage() {
   const { data: session } = useSession()
   const { isGuest, service } = useDataService()
+  const { currency, setCurrency, isLoading: currencyLoading } = useCurrency()
   const [flats, setFlats] = useState<FlatData[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [currencyUpdating, setCurrencyUpdating] = useState(false)
+  const [upiDialog, setUpiDialog] = useState<UpiDialogState>({
+    open: false,
+    flatId: null,
+    flatName: "",
+    upiId: "",
+    upiPayeeName: "",
+  })
 
   useEffect(() => {
     service.getFlats().then((data) => {
@@ -63,6 +100,57 @@ export default function SettingsPage() {
     }
   }
 
+  function openUpiDialog(flat: FlatData) {
+    setUpiDialog({
+      open: true,
+      flatId: flat._id,
+      flatName: flat.name,
+      upiId: flat.upiId ?? "",
+      upiPayeeName: flat.upiPayeeName ?? "",
+    })
+  }
+
+  async function handleSaveUpi(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!upiDialog.flatId) return
+
+    setUpdating(true)
+    const form = e.currentTarget
+    const formData = new FormData(form)
+
+    try {
+      const updated = await service.updateFlat(upiDialog.flatId, {
+        upiId: formData.get("upiId") as string || undefined,
+        upiPayeeName: formData.get("upiPayeeName") as string || undefined,
+      })
+      toast.success("UPI settings saved")
+      setFlats((prev) => prev.map((f) => f._id === upiDialog.flatId ? updated : f))
+      setUpiDialog({ ...upiDialog, open: false })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save UPI settings")
+    }
+
+    setUpdating(false)
+  }
+
+  function handleUpiDialogChange(open: boolean) {
+    if (!open) {
+      setUpiDialog({ open: false, flatId: null, flatName: "", upiId: "", upiPayeeName: "" })
+    }
+  }
+
+  async function handleCurrencyChange(newCurrency: string | null) {
+    if (!newCurrency) return
+    setCurrencyUpdating(true)
+    try {
+      await setCurrency(newCurrency as any)
+      toast.success("Currency preference updated")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update currency")
+    }
+    setCurrencyUpdating(false)
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -86,6 +174,58 @@ export default function SettingsPage() {
                 <span className="text-sm text-muted-foreground">{displayEmail}</span>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="currency">Currency</Label>
+            {currencyLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Combobox
+                items={SUPPORTED_CURRENCIES.map((c) => c.code)}
+                value={currency}
+                onValueChange={handleCurrencyChange}
+                itemToStringValue={(code) => {
+                  const config = SUPPORTED_CURRENCIES.find((c) => c.code === code)
+                  return config ? `${config.symbol} ${config.name}` : code
+                }}
+                disabled={currencyUpdating}
+              >
+                <ComboboxInput
+                  id="currency"
+                  placeholder="Search currency..."
+                  disabled={currencyUpdating}
+                />
+                <ComboboxContent>
+                  <ComboboxEmpty>No currency found.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(code) => {
+                      const config = SUPPORTED_CURRENCIES.find((c) => c.code === code)
+                      if (!config) return null
+                      return (
+                        <ComboboxItem key={code} value={code}>
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="font-medium w-6">{config.symbol}</span>
+                            <span className="text-muted-foreground">{config.name}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{config.code}</span>
+                        </ComboboxItem>
+                      )
+                    }}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Search and select your preferred currency for displaying amounts
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -139,22 +279,91 @@ export default function SettingsPage() {
                       <p className="text-xs text-muted-foreground">
                         {flat.areas.map((a) => a.label).join(", ")}
                       </p>
+                      {flat.upiId && (
+                        <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                          <CreditCard className="h-3 w-3" />
+                          {flat.upiId}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDeleteFlat(flat._id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => openUpiDialog(flat)}
+                      title="Edit UPI settings"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDeleteFlat(flat._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={upiDialog.open} onOpenChange={handleUpiDialogChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>UPI Payment Settings</DialogTitle>
+            <DialogDescription>
+              Configure UPI payment details for &quot;{upiDialog.flatName}&quot;. Roommates will use these details to pay their share.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSaveUpi} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="upiId">UPI ID</Label>
+              <Input
+                id="upiId"
+                name="upiId"
+                placeholder="e.g., name@okaxis or mobile@paytm"
+                defaultValue={upiDialog.upiId}
+                pattern="[a-zA-Z0-9.\-_]{3,30}@[a-zA-Z0-9.\-]{2,30}"
+                title="Enter a valid UPI ID (e.g., name@upi)"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter UPI ID in format: username@provider (e.g., name@okaxis)
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="upiPayeeName">Payee Name</Label>
+              <Input
+                id="upiPayeeName"
+                name="upiPayeeName"
+                placeholder="e.g., Rahul Kumar"
+                defaultValue={upiDialog.upiPayeeName}
+                maxLength={50}
+              />
+              <p className="text-xs text-muted-foreground">
+                Name that will appear in the UPI payment app
+              </p>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleUpiDialogChange(false)}
+                disabled={updating}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updating}>
+                {updating ? "Saving..." : "Save"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

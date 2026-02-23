@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next"
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-
   return {
     rules: [
       {
@@ -11,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/dashboard/", "/bill/", "/settings/", "/roommates/"],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: "https://electricity-bill-split.vercel.app/sitemap.xml",
   }
 }

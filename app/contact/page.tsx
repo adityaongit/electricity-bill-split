@@ -1,12 +1,17 @@
+import type { Metadata } from "next"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import { Mail, Github, Twitter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with the SplitWatt team - Free and open source electricity bill splitter.",
+  alternates: {
+    canonical: "https://electricity-bill-split.vercel.app/contact",
+  },
 }
 
 export default function ContactPage() {
@@ -15,6 +20,7 @@ export default function ContactPage() {
       <Header />
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+          <Breadcrumbs items={[{ name: "Contact", href: "/contact" }]} />
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold mb-4">Get in Touch</h1>
             <p className="text-muted-foreground max-w-xl mx-auto">

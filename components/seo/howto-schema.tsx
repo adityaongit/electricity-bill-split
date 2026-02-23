@@ -1,5 +1,5 @@
 export function HowToSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://splitwatt.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://electricity-bill-split.vercel.app"
 
   const schema = {
     "@context": "https://schema.org",

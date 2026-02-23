@@ -7,6 +7,7 @@ import { GuestButton } from "@/components/auth/guest-button"
 
 export const metadata: Metadata = {
   title: "Sign Up",
+  robots: { index: false },
 }
 
 export default function SignupPage() {

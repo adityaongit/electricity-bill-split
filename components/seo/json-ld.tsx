@@ -1,10 +1,10 @@
 export function JsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://splitwatt.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://electricity-bill-split.vercel.app"
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      // WebApplication Schema - Enhanced for AI Overview
+      // WebApplication Schema
       {
         "@type": "WebApplication",
         "@id": `${baseUrl}#webapp`,
@@ -22,13 +22,6 @@ export function JsonLd() {
           priceCurrency: "INR",
           availability: "https://schema.org/InStock",
           url: `${baseUrl}/signup`,
-        },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.8",
-          ratingCount: "1250",
-          bestRating: "5",
-          worstRating: "1",
         },
         featureList: [
           "Submeter reading tracking",
@@ -68,7 +61,7 @@ export function JsonLd() {
         },
       },
 
-      // WebSite Schema with Search Box
+      // WebSite Schema (SearchAction removed — no /search page exists)
       {
         "@type": "WebSite",
         "@id": `${baseUrl}#website`,
@@ -77,14 +70,6 @@ export function JsonLd() {
         description: "Free electricity bill splitter for roommates",
         publisher: {
           "@id": `${baseUrl}#organization`,
-        },
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${baseUrl}/search?q={search_term_string}`,
-          },
-          "query-input": "required name=search_term_string",
         },
       },
     ],

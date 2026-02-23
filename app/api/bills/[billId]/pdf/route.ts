@@ -5,15 +5,18 @@ import React, { createElement } from "react"
 import { getDb } from "@/lib/db"
 import { getSessionOrUnauthorized, errorResponse } from "@/lib/api-utils"
 import { BillPdfDocument } from "@/components/export/bill-pdf-document"
+import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/currency"
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ billId: string }> }
 ) {
   const { error } = await getSessionOrUnauthorized()
   if (error) return error
 
   const { billId } = await params
+  const { searchParams } = new URL(request.url)
+  const currency = (searchParams.get("currency") ?? DEFAULT_CURRENCY) as CurrencyCode
   const db = getDb()
 
   const [bill, splits] = await Promise.all([
@@ -54,7 +57,7 @@ export async function GET(
     })),
   }
 
-  const element = createElement(BillPdfDocument, { bill: billData })
+  const element = createElement(BillPdfDocument, { bill: billData, currency })
   const stream = await renderToStream(
     element as unknown as React.ReactElement<DocumentProps>
   )

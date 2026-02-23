@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://splitwatt.vercel.app"
+  const baseUrl = "https://electricity-bill-split.vercel.app"
   const now = new Date()
 
   return [
@@ -12,16 +12,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${baseUrl}/signup`,
+      url: `${baseUrl}/contact`,
       lastModified: now,
       changeFrequency: "monthly",
-      priority: 0.8,
+      priority: 0.5,
     },
     {
-      url: `${baseUrl}/login`,
+      url: `${baseUrl}/privacy`,
       lastModified: now,
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
     },
   ]
 }

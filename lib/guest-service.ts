@@ -1,5 +1,6 @@
 import { openGuestDb } from "./guest-db"
 import { calculateBill } from "./bill-calculator"
+import { DEFAULT_CURRENCY, type CurrencyCode } from "./currency"
 import type {
   DataService,
   FlatData,
@@ -32,6 +33,21 @@ export function createGuestService(): DataService {
       }
       await db.put("flats", flat)
       return flat as FlatData
+    },
+
+    async updateFlat(id, data) {
+      const db = await openGuestDb()
+      const existing = await db.get("flats", id)
+      if (!existing) throw new Error("Flat not found")
+
+      const updated = {
+        ...existing,
+        ...(data.upiId !== undefined && { upiId: data.upiId || undefined }),
+        ...(data.upiPayeeName !== undefined && { upiPayeeName: data.upiPayeeName || undefined }),
+        updatedAt: new Date().toISOString(),
+      }
+      await db.put("flats", updated)
+      return updated as FlatData
     },
 
     async deleteFlat(id) {
@@ -163,7 +179,7 @@ export function createGuestService(): DataService {
       return { _id: billId }
     },
 
-    async generatePdfBlob(billId) {
+    async generatePdfBlob(billId, currency?: string) {
       const bill = await this.getBill(billId)
       if (!bill) throw new Error("Bill not found")
 
@@ -171,10 +187,30 @@ export function createGuestService(): DataService {
       const { BillPdfDocument } = await import("@/components/export/bill-pdf-document")
       const { createElement } = await import("react")
 
-      const doc = createElement(BillPdfDocument, { bill })
+      const doc = createElement(BillPdfDocument, { bill, currency: currency as any })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const blob = await pdf(doc as any).toBlob()
       return blob
     },
   }
+}
+
+// Currency preference helpers for guest mode
+export async function getCurrencyPreference(): Promise<CurrencyCode> {
+  try {
+    const db = await openGuestDb()
+    const setting = await db.get("user_settings", "currency")
+    return (setting?.value as CurrencyCode) ?? DEFAULT_CURRENCY
+  } catch {
+    return DEFAULT_CURRENCY
+  }
+}
+
+export async function setCurrencyPreference(code: CurrencyCode): Promise<void> {
+  const db = await openGuestDb()
+  await db.put("user_settings", {
+    key: "currency",
+    value: code,
+    updatedAt: new Date().toISOString(),
+  })
 }

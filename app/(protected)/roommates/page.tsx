@@ -18,6 +18,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -157,6 +158,7 @@ export default function RoommatesPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Roommate</DialogTitle>
+              <DialogDescription>Add a new roommate to your flat.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddRoommate} className="space-y-4">
               <div className="space-y-2">
@@ -273,6 +275,7 @@ export default function RoommatesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Roommate</DialogTitle>
+            <DialogDescription>Update roommate details.</DialogDescription>
           </DialogHeader>
           {editingRoommate && (
             <form onSubmit={handleUpdateRoommate} className="space-y-4">

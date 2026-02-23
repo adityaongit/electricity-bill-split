@@ -29,6 +29,16 @@ export function createApiService(): DataService {
       return res.data as FlatData
     },
 
+    async updateFlat(id, data) {
+      const res = await fetch(`/api/flats/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }).then((r) => r.json())
+      if (!res.success) throw new Error(res.error)
+      return res.data as FlatData
+    },
+
     async deleteFlat(id) {
       const res = await fetch(`/api/flats/${id}`, { method: "DELETE" }).then((r) => r.json())
       if (!res.success) throw new Error(res.error)
@@ -89,8 +99,11 @@ export function createApiService(): DataService {
       return { _id: res.data._id }
     },
 
-    async generatePdfBlob(billId) {
-      const res = await fetch(`/api/bills/${billId}/pdf`)
+    async generatePdfBlob(billId, currency) {
+      const url = currency
+        ? `/api/bills/${billId}/pdf?currency=${encodeURIComponent(currency)}`
+        : `/api/bills/${billId}/pdf`
+      const res = await fetch(url)
       if (!res.ok) throw new Error("Failed to generate PDF")
       return res.blob()
     },

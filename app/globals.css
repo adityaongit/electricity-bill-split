@@ -167,7 +167,43 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
+  }
+}
+
+/* Stripe-style vertical content lines */
+.content-lines {
+  position: relative;
+}
+
+.content-lines::before,
+.content-lines::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: rgba(128, 128, 128, 0.2);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.content-lines::before {
+  left: calc(50% - 600px);
+}
+
+.content-lines::after {
+  left: calc(50% + 600px);
+}
+
+@media (max-width: 1200px) {
+  .content-lines::before,
+  .content-lines::after {
+    display: none;
   }
 }
