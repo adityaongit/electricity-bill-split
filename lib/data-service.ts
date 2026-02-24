@@ -90,6 +90,9 @@ export interface DataService {
   getBills(flatId: string, page?: number, limit?: number): Promise<BillListResult>
   getBill(billId: string): Promise<BillDetailData | null>
   createBill(input: CreateBillInput): Promise<{ _id: string }>
+  deleteBill(id: string): Promise<void>
 
   generatePdfBlob(billId: string, currency?: string): Promise<Blob>
+
+  clearAllData?(): Promise<void>
 }

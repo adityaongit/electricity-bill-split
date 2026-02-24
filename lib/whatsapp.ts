@@ -1,33 +1,8 @@
 import { formatCurrency } from "@/lib/utils"
 import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/currency"
+import type { BillDetailData } from "@/lib/data-service"
 
-export interface WhatsAppBillData {
-  billingPeriod: { from: string; to: string }
-  totalBill: number
-  totalUnits: number
-  submeterReadings: {
-    hall: { previous: number; current: number }
-    room: { previous: number; current: number }
-  }
-  computed: {
-    perUnitPrice: number
-    hallUnits: number
-    roomUnits: number
-    commonUnits: number
-    hallCost: number
-    roomCost: number
-    commonCost: number
-  }
-  splits: {
-    roommateName: string
-    area: string
-    daysStayed: number
-    areaSharePercent: number
-    areaCost: number
-    commonCost: number
-    totalAmount: number
-  }[]
-}
+export type WhatsAppBillData = BillDetailData
 
 export function getUpiPaymentLink(
   upiId: string,
@@ -66,8 +41,12 @@ export function getWhatsAppUrl(data: WhatsAppBillData, currency: CurrencyCode = 
   text += `Per Unit Price: ${formatCurrency(data.computed.perUnitPrice, currency)}\n\n`
 
   text += `*── Submeter Readings ──*\n`
-  text += `*Hall:* ${data.submeterReadings.hall.previous} → ${data.submeterReadings.hall.current} = ${data.computed.hallUnits} units (${formatCurrency(data.computed.hallCost, currency)})\n`
-  text += `*Room:* ${data.submeterReadings.room.previous} → ${data.submeterReadings.room.current} = ${data.computed.roomUnits} units (${formatCurrency(data.computed.roomCost, currency)})\n`
+  for (const [slug, reading] of Object.entries(data.submeterReadings)) {
+    const units = data.computed.areaUnits[slug] || 0
+    const cost = data.computed.areaCosts[slug] || 0
+    const label = slug.charAt(0).toUpperCase() + slug.slice(1)
+    text += `*${label}:* ${reading.previous} → ${reading.current} = ${units} units (${formatCurrency(cost, currency)})\n`
+  }
   text += `*Common:* ${data.computed.commonUnits} units (${formatCurrency(data.computed.commonCost, currency)})\n\n`
 
   text += `*── Individual Shares ──*\n`
@@ -110,8 +89,12 @@ export function getIndividualWhatsAppUrl(
   text += `Per Unit Price: ${formatCurrency(data.computed.perUnitPrice, currency)}\n\n`
 
   text += `*── Submeter Readings ──*\n`
-  text += `*Hall:* ${data.submeterReadings.hall.previous} → ${data.submeterReadings.hall.current} = ${data.computed.hallUnits} units (${formatCurrency(data.computed.hallCost, currency)})\n`
-  text += `*Room:* ${data.submeterReadings.room.previous} → ${data.submeterReadings.room.current} = ${data.computed.roomUnits} units (${formatCurrency(data.computed.roomCost, currency)})\n`
+  for (const [slug, reading] of Object.entries(data.submeterReadings)) {
+    const units = data.computed.areaUnits[slug] || 0
+    const cost = data.computed.areaCosts[slug] || 0
+    const label = slug.charAt(0).toUpperCase() + slug.slice(1)
+    text += `*${label}:* ${reading.previous} → ${reading.current} = ${units} units (${formatCurrency(cost, currency)})\n`
+  }
   text += `*Common:* ${data.computed.commonUnits} units (${formatCurrency(data.computed.commonCost, currency)})\n\n`
 
   text += `*── Individual Shares ──*\n`

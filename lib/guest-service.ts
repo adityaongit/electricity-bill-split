@@ -1,4 +1,4 @@
-import { openGuestDb } from "./guest-db"
+import { openGuestDb, clearGuestDb } from "./guest-db"
 import { calculateBill } from "./bill-calculator"
 import { DEFAULT_CURRENCY, type CurrencyCode } from "./currency"
 import type {
@@ -199,6 +199,22 @@ export function createGuestService(): DataService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const blob = await pdf(doc as any).toBlob()
       return blob
+    },
+
+    async deleteBill(id) {
+      const db = await openGuestDb()
+      // First delete all splits associated with this bill
+      const splits = await db.getAllFromIndex("bill_splits", "billId", id)
+      const tx = db.transaction(["bills", "bill_splits"], "readwrite")
+      for (const split of splits) {
+        await tx.objectStore("bill_splits").delete(split._id)
+      }
+      await tx.objectStore("bills").delete(id)
+      await tx.done
+    },
+
+    async clearAllData() {
+      await clearGuestDb()
     },
   }
 }

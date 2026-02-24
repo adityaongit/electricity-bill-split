@@ -101,5 +101,10 @@ export function createApiService(): DataService {
       if (!res.ok) throw new Error("Failed to generate PDF")
       return res.blob()
     },
+
+    async deleteBill(id) {
+      const res = await fetch(`/api/bills/${id}`, { method: "DELETE" }).then((r) => r.json())
+      if (!res.success) throw new Error(res.error)
+    },
   }
 }

@@ -8,6 +8,7 @@ import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { toast } from "sonner"
 import { generateBillFilename } from "@/lib/utils"
+import type { BillDetailData } from "@/lib/data-service"
 import {
   trackExportPDF,
   trackExportPDFFailed,
@@ -18,33 +19,7 @@ import {
 
 interface ExportActionsProps {
   billId: string
-  bill: {
-    billingPeriod: { from: string; to: string }
-    totalBill: number
-    totalUnits: number
-    submeterReadings: {
-      hall: { previous: number; current: number }
-      room: { previous: number; current: number }
-    }
-    computed: {
-      perUnitPrice: number
-      hallUnits: number
-      roomUnits: number
-      commonUnits: number
-      hallCost: number
-      roomCost: number
-      commonCost: number
-    }
-    splits: {
-      roommateName: string
-      area: string
-      daysStayed: number
-      areaSharePercent: number
-      areaCost: number
-      commonCost: number
-      totalAmount: number
-    }[]
-  }
+  bill: BillDetailData
   imageTargetId?: string
 }
 
