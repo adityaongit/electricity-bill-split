@@ -18,16 +18,16 @@ export function createGuestService(): DataService {
       return all as FlatData[]
     },
 
-    async createFlat(name) {
+    async createFlat(name, areas) {
       const db = await openGuestDb()
       const now = new Date().toISOString()
       const flat = {
         _id: crypto.randomUUID(),
         name,
-        areas: [
-          { slug: "hall", label: "Hall" },
-          { slug: "room", label: "Room" },
-        ],
+        areas: areas.map((a, idx) => ({
+          slug: a.slug || `area-${idx}`,
+          label: a.label,
+        })),
         createdAt: now,
         updatedAt: now,
       }
@@ -183,11 +183,19 @@ export function createGuestService(): DataService {
       const bill = await this.getBill(billId)
       if (!bill) throw new Error("Bill not found")
 
+      // Get flat for area labels
+      const db = await openGuestDb()
+      const flat = await db.get("flats", bill.flatId)
+
       const { pdf } = await import("@react-pdf/renderer")
       const { BillPdfDocument } = await import("@/components/export/bill-pdf-document")
       const { createElement } = await import("react")
 
-      const doc = createElement(BillPdfDocument, { bill, currency: currency as any })
+      const doc = createElement(BillPdfDocument, {
+        bill,
+        flat: flat ? { areas: flat.areas } : undefined,
+        currency: currency as any
+      })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const blob = await pdf(doc as any).toBlob()
       return blob

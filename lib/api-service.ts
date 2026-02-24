@@ -13,17 +13,11 @@ export function createApiService(): DataService {
       return (res.data ?? []) as FlatData[]
     },
 
-    async createFlat(name) {
+    async createFlat(name, areas) {
       const res = await fetch("/api/flats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          areas: [
-            { slug: "hall", label: "Hall" },
-            { slug: "room", label: "Room" },
-          ],
-        }),
+        body: JSON.stringify({ name, areas }),
       }).then((r) => r.json())
       if (!res.success) throw new Error(res.error)
       return res.data as FlatData

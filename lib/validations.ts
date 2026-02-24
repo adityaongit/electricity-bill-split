@@ -45,10 +45,7 @@ export const createBillSchema = z.object({
   }),
   totalBill: z.number().positive("Total bill must be positive"),
   totalUnits: z.number().positive("Total units must be positive"),
-  submeterReadings: z.object({
-    hall: submeterReadingSchema,
-    room: submeterReadingSchema,
-  }),
+  submeterReadings: z.record(z.string(), submeterReadingSchema),
   roommates: z.array(
     z.object({
       roommateId: z.string().min(1),

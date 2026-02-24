@@ -60,6 +60,8 @@ export default function BillDetailPage({
     return roommate?.phone
   }
 
+  const getAreaLabel = (slug: string) => flat?.areas.find((a) => a.slug === slug)?.label || slug
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -149,46 +151,33 @@ export default function BillDetailPage({
         <CardContent>
           {/* Mobile view */}
           <div className="space-y-4 md:hidden">
-            <div className="rounded-lg border p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">Hall</span>
-                <span className="text-sm text-muted-foreground">{bill.computed.hallUnits} units</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Previous</p>
-                  <p className="font-medium">{bill.submeterReadings.hall.previous}</p>
+            {Object.entries(bill.submeterReadings).map(([slug, reading]) => {
+              const units = bill.computed.areaUnits[slug] || 0
+              const cost = bill.computed.areaCosts[slug] || 0
+              const label = getAreaLabel(slug)
+              return (
+                <div key={slug} className="rounded-lg border p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">{label}</span>
+                    <span className="text-sm text-muted-foreground">{units} units</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground text-xs">Previous</p>
+                      <p className="font-medium">{reading.previous}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Current</p>
+                      <p className="font-medium">{reading.current}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">Cost</p>
+                      <p className="font-bold">{formatCurrency(cost, currency)}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Current</p>
-                  <p className="font-medium">{bill.submeterReadings.hall.current}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Cost</p>
-                  <p className="font-bold">{formatCurrency(bill.computed.hallCost, currency)}</p>
-                </div>
-              </div>
-            </div>
-            <div className="rounded-lg border p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold">Room</span>
-                <span className="text-sm text-muted-foreground">{bill.computed.roomUnits} units</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Previous</p>
-                  <p className="font-medium">{bill.submeterReadings.room.previous}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Current</p>
-                  <p className="font-medium">{bill.submeterReadings.room.current}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Cost</p>
-                  <p className="font-bold">{formatCurrency(bill.computed.roomCost, currency)}</p>
-                </div>
-              </div>
-            </div>
+              )
+            })}
             <div className="rounded-lg bg-muted/50 p-3 text-center">
               <p className="text-sm text-muted-foreground">Common Units</p>
               <p className="text-lg font-bold">{bill.computed.commonUnits} units</p>
@@ -209,20 +198,20 @@ export default function BillDetailPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow>
-                  <TableCell className="font-medium">Hall</TableCell>
-                  <TableCell className="text-right">{bill.submeterReadings.hall.previous}</TableCell>
-                  <TableCell className="text-right">{bill.submeterReadings.hall.current}</TableCell>
-                  <TableCell className="text-right font-medium">{bill.computed.hallUnits}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.hallCost, currency)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className="font-medium">Room</TableCell>
-                  <TableCell className="text-right">{bill.submeterReadings.room.previous}</TableCell>
-                  <TableCell className="text-right">{bill.submeterReadings.room.current}</TableCell>
-                  <TableCell className="text-right font-medium">{bill.computed.roomUnits}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(bill.computed.roomCost, currency)}</TableCell>
-                </TableRow>
+                {Object.entries(bill.submeterReadings).map(([slug, reading]) => {
+                  const units = bill.computed.areaUnits[slug] || 0
+                  const cost = bill.computed.areaCosts[slug] || 0
+                  const label = getAreaLabel(slug)
+                  return (
+                    <TableRow key={slug}>
+                      <TableCell className="font-medium">{label}</TableCell>
+                      <TableCell className="text-right">{reading.previous}</TableCell>
+                      <TableCell className="text-right">{reading.current}</TableCell>
+                      <TableCell className="text-right font-medium">{units}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(cost, currency)}</TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
@@ -243,7 +232,7 @@ export default function BillDetailPage({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-base">{s.roommateName}</p>
-                      <p className="text-sm text-muted-foreground capitalize">{s.area}</p>
+                      <p className="text-sm text-muted-foreground">{getAreaLabel(s.area)}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold">{formatCurrency(s.totalAmount, currency)}</p>
@@ -320,7 +309,7 @@ export default function BillDetailPage({
                   return (
                     <TableRow key={i}>
                       <TableCell className="font-medium">{s.roommateName}</TableCell>
-                      <TableCell className="capitalize">{s.area}</TableCell>
+                      <TableCell>{getAreaLabel(s.area)}</TableCell>
                       <TableCell className="text-right">{s.daysStayed}</TableCell>
                       <TableCell className="text-right">{s.areaSharePercent}%</TableCell>
                       <TableCell className="text-right">{formatCurrency(s.areaCost, currency)}</TableCell>

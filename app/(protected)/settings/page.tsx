@@ -28,13 +28,25 @@ import { toast } from "sonner"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { SUPPORTED_CURRENCIES } from "@/lib/currency"
-import type { FlatData } from "@/lib/data-service"
-import { Home, Trash2, Plus, User, Mail, CreditCard } from "lucide-react"
+import type { FlatData, AreaInput } from "@/lib/data-service"
+import { Home, Trash2, Plus, User, Mail, CreditCard, ChevronRight } from "lucide-react"
 import {
   trackFlatCreate,
   trackFlatDelete,
   trackCurrencyChange,
 } from "@/lib/analytics"
+
+// Room type presets
+const ROOM_TYPE_PRESETS = [
+  { value: "hall", label: "Hall" },
+  { value: "living-room", label: "Living Room" },
+  { value: "bedroom", label: "Bedroom" },
+  { value: "kitchen", label: "Kitchen" },
+  { value: "bathroom", label: "Bathroom" },
+  { value: "balcony", label: "Balcony" },
+  { value: "study", label: "Study/Office" },
+  { value: "store", label: "Store Room" },
+]
 
 interface UpiDialogState {
   open: boolean
@@ -44,14 +56,212 @@ interface UpiDialogState {
   upiPayeeName: string
 }
 
+type CreateFlatStep = 1 | 2 | 3
+
+function CreateFlatDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: (flat: FlatData) => void
+}) {
+  const { service } = useDataService()
+  const [step, setStep] = useState<CreateFlatStep>(1)
+  const [creating, setCreating] = useState(false)
+
+  // Step 1: Flat name
+  const [flatName, setFlatName] = useState("")
+
+  // Step 2: Number of rooms
+  const [numRooms, setNumRooms] = useState<number>(2)
+
+  // Step 3: Room types
+  const [roomTypes, setRoomTypes] = useState<Array<{ preset: string; custom?: string }>>([])
+
+  function resetForm() {
+    setFlatName("")
+    setNumRooms(2)
+    setRoomTypes([])
+    setStep(1)
+  }
+
+  function handleOpenChange(open: boolean) {
+    if (!open) resetForm()
+    onOpenChange(open)
+  }
+
+  function handleNextStep1() {
+    if (!flatName.trim()) {
+      toast.error("Please enter a flat name")
+      return
+    }
+    setStep(2)
+  }
+
+  function handleNextStep2() {
+    if (numRooms < 1) {
+      toast.error("Please enter at least 1 room")
+      return
+    }
+    // Initialize room types with defaults
+    setRoomTypes(
+      Array.from({ length: numRooms }, (_, i) => ({
+        preset: i === 0 ? "hall" : i === 1 ? "bedroom" : "bedroom",
+      }))
+    )
+    setStep(3)
+  }
+
+  async function handleCreate() {
+    setCreating(true)
+    try {
+      const areas: AreaInput[] = roomTypes.map((rt, i) => ({
+        slug: rt.custom ? `custom-${i}` : rt.preset,
+        label: rt.custom || ROOM_TYPE_PRESETS.find((p) => p.value === rt.preset)?.label || `Room ${i + 1}`,
+      }))
+
+      const flat = await service.createFlat(flatName.trim(), areas)
+      trackFlatCreate()
+      toast.success("Flat created successfully!")
+      resetForm()
+      onOpenChange(false)
+      onSuccess(flat)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create flat")
+    }
+    setCreating(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create New Flat</DialogTitle>
+          <DialogDescription>
+            {step === 1 && "Enter your flat name to get started"}
+            {step === 2 && "How many rooms/submeters does your flat have?"}
+            {step === 3 && "Configure the room types for each submeter"}
+          </DialogDescription>
+        </DialogHeader>
+
+        {step === 1 && (
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="flatName">Flat Name</Label>
+              <Input
+                id="flatName"
+                placeholder="e.g., My Apartment, 2BHK Flat"
+                value={flatName}
+                onChange={(e) => setFlatName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={handleNextStep1}>
+                Next <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="numRooms">Number of Rooms/Submeters</Label>
+              <Input
+                id="numRooms"
+                type="number"
+                min={1}
+                max={20}
+                value={numRooms}
+                onChange={(e) => setNumRooms(parseInt(e.target.value) || 1)}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the total number of rooms with separate electricity submeters
+              </p>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                Back
+              </Button>
+              <Button type="button" onClick={handleNextStep2}>
+                Next <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
+            <div className="space-y-3">
+              {roomTypes.map((rt, i) => (
+                <div key={i} className="flex items-center gap-2 p-3 rounded-lg border bg-muted/20">
+                  <span className="text-sm font-medium w-20 shrink-0">Room {i + 1}</span>
+                  <div className="flex-1 flex gap-2">
+                    <select
+                      className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
+                      value={rt.preset}
+                      onChange={(e) => {
+                        const new = [...roomTypes]
+                        new[i] = { ...rt, preset: e.target.value, custom: undefined }
+                        setRoomTypes(new)
+                      }}
+                    >
+                      {ROOM_TYPE_PRESETS.map((preset) => (
+                        <option key={preset.value} value={preset.value}>
+                          {preset.label}
+                        </option>
+                      ))}
+                      <option value="other">Other...</option>
+                    </select>
+                    {rt.preset === "other" && (
+                      <Input
+                        placeholder="Custom type"
+                        className="flex-1"
+                        value={rt.custom || ""}
+                        onChange={(e) => {
+                          const new = [...roomTypes]
+                          new[i] = { ...rt, custom: e.target.value }
+                          setRoomTypes(new)
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-full sm:w-auto">
+                Back
+              </Button>
+              <Button
+                type="button"
+                onClick={handleCreate}
+                disabled={creating || roomTypes.some((rt) => rt.preset === "other" && !rt.custom?.trim())}
+                className="w-full sm:w-auto"
+              >
+                {creating ? "Creating..." : "Create Flat"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function SettingsPage() {
   const { data: session } = useSession()
   const { isGuest, service } = useDataService()
   const { currency, setCurrency, isLoading: currencyLoading } = useCurrency()
   const [flats, setFlats] = useState<FlatData[]>([])
   const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
-  const [updating, setUpdating] = useState(false)
   const [currencyUpdating, setCurrencyUpdating] = useState(false)
   const [upiDialog, setUpiDialog] = useState<UpiDialogState>({
     open: false,
@@ -60,6 +270,7 @@ export default function SettingsPage() {
     upiId: "",
     upiPayeeName: "",
   })
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   useEffect(() => {
     service.getFlats().then((data) => {
@@ -77,23 +288,8 @@ export default function SettingsPage() {
     .toUpperCase()
     .slice(0, 2)
 
-  async function handleCreateFlat(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setCreating(true)
-
-    const form = e.currentTarget
-    const formData = new FormData(form)
-    try {
-      const flat = await service.createFlat(formData.get("flatName") as string)
-      trackFlatCreate()
-      toast.success("Flat created")
-      setFlats((prev) => [flat, ...prev])
-      form.reset()
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create flat")
-    }
-
-    setCreating(false)
+  function handleFlatCreated(flat: FlatData) {
+    setFlats((prev) => [flat, ...prev])
   }
 
   async function handleDeleteFlat(id: string) {
@@ -121,7 +317,7 @@ export default function SettingsPage() {
     e.preventDefault()
     if (!upiDialog.flatId) return
 
-    setUpdating(true)
+    const updating = true
     const form = e.currentTarget
     const formData = new FormData(form)
 
@@ -136,8 +332,6 @@ export default function SettingsPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save UPI settings")
     }
-
-    setUpdating(false)
   }
 
   function handleUpiDialogChange(open: boolean) {
@@ -244,21 +438,10 @@ export default function SettingsPage() {
           <CardTitle>Your Flats</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleCreateFlat} className="flex gap-2">
-            <Input
-              name="flatName"
-              placeholder="e.g. My Apartment"
-              required
-              className="flex-1"
-            />
-            <Button type="submit" disabled={creating} size="sm" className="gap-1.5">
-              <Plus className="h-4 w-4" />
-              {creating ? "Creating..." : "Create"}
-            </Button>
-          </form>
-          <p className="text-xs text-muted-foreground">
-            Default areas: Hall, Room. More areas coming soon.
-          </p>
+          <Button onClick={() => setCreateDialogOpen(true)} className="w-full gap-1.5">
+            <Plus className="h-4 w-4" />
+            Create New Flat
+          </Button>
 
           {loading ? (
             <div className="space-y-3">
@@ -286,7 +469,9 @@ export default function SettingsPage() {
                     <div>
                       <p className="text-sm font-medium">{flat.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {flat.areas.map((a) => a.label).join(", ")}
+                        {flat.areas.length === 1
+                          ? `${flat.areas.length} room`
+                          : `${flat.areas.length} rooms`}
                       </p>
                       {flat.upiId && (
                         <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -320,6 +505,12 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <CreateFlatDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleFlatCreated}
+      />
 
       <Dialog open={upiDialog.open} onOpenChange={handleUpiDialogChange}>
         <DialogContent>
@@ -362,13 +553,10 @@ export default function SettingsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => handleUpiDialogChange(false)}
-                disabled={updating}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={updating}>
-                {updating ? "Saving..." : "Save"}
-              </Button>
+              <Button type="submit">Save</Button>
             </DialogFooter>
           </form>
         </DialogContent>

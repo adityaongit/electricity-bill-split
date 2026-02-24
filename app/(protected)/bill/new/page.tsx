@@ -54,10 +54,11 @@ export default function NewBillPage() {
   const [dateTo, setDateTo] = useState<Date | undefined>()
   const [totalBill, setTotalBill] = useState("")
   const [totalUnits, setTotalUnits] = useState("")
-  const [hallPrevious, setHallPrevious] = useState("")
-  const [hallCurrent, setHallCurrent] = useState("")
-  const [roomPrevious, setRoomPrevious] = useState("")
-  const [roomCurrent, setRoomCurrent] = useState("")
+
+  // Dynamic submeter readings state
+  const [submeterReadings, setSubmeterReadings] = useState<
+    Record<string, { previous: string; current: string }>
+  >({})
   const [roommatesDays, setRoommatesDays] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -82,11 +83,26 @@ export default function NewBillPage() {
       })
       setRoommatesDays(days)
 
-      // Auto reading shift
+      // Initialize submeter readings for all areas
+      const initialReadings: Record<string, { previous: string; current: string }> = {}
+      selectedFlat.areas.forEach((area) => {
+        initialReadings[area.slug] = { previous: "", current: "" }
+      })
+      setSubmeterReadings(initialReadings)
+
+      // Auto-fill from last bill
       const latestBill = billsResult.bills[0]
       if (latestBill?.submeterReadings) {
-        setHallPrevious(String(latestBill.submeterReadings.hall.current))
-        setRoomPrevious(String(latestBill.submeterReadings.room.current))
+        const autoFilledReadings: Record<string, { previous: string; current: string }> = {}
+        for (const [slug, reading] of Object.entries(latestBill.submeterReadings)) {
+          if (slug in initialReadings) {
+            autoFilledReadings[slug] = {
+              previous: String(reading.current),
+              current: "",
+            }
+          }
+        }
+        setSubmeterReadings(autoFilledReadings)
         setAutoFilled(true)
       }
     })
@@ -106,24 +122,34 @@ export default function NewBillPage() {
   const preview: BillResult | null = useMemo(() => {
     const bill = parseFloat(totalBill)
     const units = parseFloat(totalUnits)
-    if (!bill || !units || roommateInputs.length === 0) return null
+
+    // Check if all submeter readings have valid values
+    const allReadingsFilled = selectedFlat?.areas.every(
+      (area) =>
+        submeterReadings[area.slug]?.previous &&
+        submeterReadings[area.slug]?.current
+    )
+    )
+
+    if (!bill || !units || !allReadingsFilled || roommateInputs.length === 0) return null
+
+    const readings = Object.fromEntries(
+      Object.entries(submeterReadings).map(([slug, vals]) => [
+        slug,
+        {
+          previous: parseFloat(vals.previous) || 0,
+          current: parseFloat(vals.current) || 0,
+        },
+      ])
+    )
 
     return calculateBill({
       totalBill: bill,
       totalUnits: units,
-      submeterReadings: {
-        hall: {
-          previous: parseFloat(hallPrevious) || 0,
-          current: parseFloat(hallCurrent) || 0,
-        },
-        room: {
-          previous: parseFloat(roomPrevious) || 0,
-          current: parseFloat(roomCurrent) || 0,
-        },
-      },
+      submeterReadings: readings,
       roommates: roommateInputs,
     })
-  }, [totalBill, totalUnits, hallPrevious, hallCurrent, roomPrevious, roomCurrent, roommateInputs])
+  }, [totalBill, totalUnits, submeterReadings, roommateInputs, selectedFlat])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -132,21 +158,22 @@ export default function NewBillPage() {
     trackBillCreateInitiate()
 
     try {
+      const readings = Object.fromEntries(
+        Object.entries(submeterReadings).map(([slug, vals]) => [
+          slug,
+          {
+            previous: parseFloat(vals.previous) || 0,
+            current: parseFloat(vals.current) || 0,
+          },
+        ])
+      )
+
       const result = await service.createBill({
         flatId: selectedFlat._id,
         billingPeriod: { from: dateFrom.toISOString(), to: dateTo.toISOString() },
         totalBill: parseFloat(totalBill),
         totalUnits: parseFloat(totalUnits),
-        submeterReadings: {
-          hall: {
-            previous: parseFloat(hallPrevious) || 0,
-            current: parseFloat(hallCurrent) || 0,
-          },
-          room: {
-            previous: parseFloat(roomPrevious) || 0,
-            current: parseFloat(roomCurrent) || 0,
-          },
-        },
+        submeterReadings: readings,
         roommates: roommateInputs,
         status: "finalized",
       })
@@ -161,6 +188,14 @@ export default function NewBillPage() {
     }
 
     setSubmitting(false)
+  }
+
+  function updateReading(slug: string, field: "previous" | "current", value: string) {
+    setSubmeterReadings((prev) => ({
+      ...prev,
+      [slug]: { ...prev[slug], [field]: value },
+    }))
+    setAutoFilled(false)
   }
 
   if (loading) {
@@ -242,7 +277,7 @@ export default function NewBillPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="totalBill">Total Bill (₹)</Label>
+                  <Label htmlFor="totalBill">Total Bill ({currency === "INR" ? "₹" : currency})</Label>
                   <Input
                     id="totalBill"
                     type="number"
@@ -279,62 +314,33 @@ export default function NewBillPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <p className="mb-2 text-sm font-medium">Hall</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hallPrevious">Previous</Label>
-                    <Input
-                      id="hallPrevious"
-                      type="number"
-                      step="0.01"
-                      value={hallPrevious}
-                      onChange={(e) => {
-                        setHallPrevious(e.target.value)
-                        setAutoFilled(false)
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="hallCurrent">Current</Label>
-                    <Input
-                      id="hallCurrent"
-                      type="number"
-                      step="0.01"
-                      value={hallCurrent}
-                      onChange={(e) => setHallCurrent(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p className="mb-2 text-sm font-medium">Room</p>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="roomPrevious">Previous</Label>
-                    <Input
-                      id="roomPrevious"
-                      type="number"
-                      step="0.01"
-                      value={roomPrevious}
-                      onChange={(e) => {
-                        setRoomPrevious(e.target.value)
-                        setAutoFilled(false)
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="roomCurrent">Current</Label>
-                    <Input
-                      id="roomCurrent"
-                      type="number"
-                      step="0.01"
-                      value={roomCurrent}
-                      onChange={(e) => setRoomCurrent(e.target.value)}
-                    />
+              {selectedFlat?.areas.map((area) => (
+                <div key={area.slug}>
+                  <p className="mb-2 text-sm font-medium">{area.label}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`${area.slug}-previous`}>Previous</Label>
+                      <Input
+                        id={`${area.slug}-previous`}
+                        type="number"
+                        step="0.01"
+                        value={submeterReadings[area.slug]?.previous || ""}
+                        onChange={(e) => updateReading(area.slug, "previous", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`${area.slug}-current`}>Current</Label>
+                      <Input
+                        id={`${area.slug}-current`}
+                        type="number"
+                        step="0.01"
+                        value={submeterReadings[area.slug]?.current || ""}
+                        onChange={(e) => updateReading(area.slug, "current", e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
 
@@ -357,8 +363,8 @@ export default function NewBillPage() {
                     <div key={r._id} className="flex items-center gap-3">
                       <div className="flex-1">
                         <p className="text-sm font-medium">{r.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {r.area}
+                        <p className="text-xs text-muted-foreground">
+                          {selectedFlat?.areas.find((a) => a.slug === r.area)?.label || r.area}
                         </p>
                       </div>
                       <Input
@@ -370,13 +376,11 @@ export default function NewBillPage() {
                         placeholder="30"
                         onChange={(e) => {
                           const value = e.target.value
-                          // Allow empty string or valid numbers
                           if (value === "" || /^\d+$/.test(value)) {
                             setRoommatesDays((prev) => ({ ...prev, [r._id]: value }))
                           }
                         }}
                         onBlur={() => {
-                          // Reset to 30 if left empty
                           if (!roommatesDays[r._id] || roommatesDays[r._id] === "") {
                             setRoommatesDays((prev) => ({ ...prev, [r._id]: "30" }))
                           }
@@ -417,24 +421,28 @@ export default function NewBillPage() {
                         {preview.computed.commonUnits}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Hall Units</p>
-                      <p className="font-medium">{preview.computed.hallUnits}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Room Units</p>
-                      <p className="font-medium">{preview.computed.roomUnits}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Hall Cost</p>
-                      <p className="font-medium">
-                        {formatCurrency(preview.computed.hallCost, currency)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Room Cost</p>
-                      <p className="font-medium">
-                        {formatCurrency(preview.computed.roomCost, currency)}
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Area Breakdown</p>
+                    {Object.entries(preview.computed.areaUnits).map(([slug, units]) => (
+                      <div key={slug} className="grid grid-cols-3 gap-2 text-sm">
+                        <p className="text-muted-foreground">
+                          {selectedFlat?.areas.find((a) => a.slug === slug)?.label || slug}
+                        </p>
+                        <p className="text-center font-medium">{units} units</p>
+                        <p className="text-right font-medium">
+                          {formatCurrency(preview.computed.areaCosts[slug] || 0, currency)}
+                        </p>
+                      </div>
+                    ))}
+                    <div className="grid grid-cols-3 gap-2 text-sm pt-2 border-t">
+                      <p className="text-muted-foreground">Common</p>
+                      <p className="text-center font-medium">{preview.computed.commonUnits} units</p>
+                      <p className="text-right font-medium">
+                        {formatCurrency(preview.computed.commonCost, currency)}
                       </p>
                     </div>
                   </div>
@@ -456,7 +464,9 @@ export default function NewBillPage() {
                           <TableCell className="font-medium">
                             {s.roommateName}
                           </TableCell>
-                          <TableCell className="capitalize">{s.area}</TableCell>
+                          <TableCell>
+                            {selectedFlat?.areas.find((a) => a.slug === s.area)?.label || s.area}
+                          </TableCell>
                           <TableCell className="text-right">
                             {s.areaSharePercent}%
                           </TableCell>

@@ -21,17 +21,12 @@ export interface BillData {
   billingPeriod: { from: string; to: string }
   totalBill: number
   totalUnits: number
-  submeterReadings: {
-    hall: { previous: number; current: number }
-    room: { previous: number; current: number }
-  }
+  submeterReadings: Record<string, { previous: number; current: number }>
   computed: {
-    hallUnits: number
-    roomUnits: number
+    areaUnits: Record<string, number>
     commonUnits: number
     perUnitPrice: number
-    hallCost: number
-    roomCost: number
+    areaCosts: Record<string, number>
     commonCost: number
   }
   status: string
@@ -61,15 +56,17 @@ export interface BillListResult {
   }
 }
 
+export interface AreaInput {
+  slug: string
+  label: string
+}
+
 export interface CreateBillInput {
   flatId: string
   billingPeriod: { from: string; to: string }
   totalBill: number
   totalUnits: number
-  submeterReadings: {
-    hall: { previous: number; current: number }
-    room: { previous: number; current: number }
-  }
+  submeterReadings: Record<string, { previous: number; current: number }>
   roommates: {
     roommateId: string
     roommateName: string
@@ -81,7 +78,7 @@ export interface CreateBillInput {
 
 export interface DataService {
   getFlats(): Promise<FlatData[]>
-  createFlat(name: string): Promise<FlatData>
+  createFlat(name: string, areas: AreaInput[]): Promise<FlatData>
   updateFlat(id: string, data: { upiId?: string; upiPayeeName?: string }): Promise<FlatData>
   deleteFlat(id: string): Promise<void>
 

@@ -57,17 +57,12 @@ interface BillPdfProps {
     billingPeriod: { from: string; to: string }
     totalBill: number
     totalUnits: number
-    submeterReadings: {
-      hall: { previous: number; current: number }
-      room: { previous: number; current: number }
-    }
+    submeterReadings: Record<string, { previous: number; current: number }>
     computed: {
-      hallUnits: number
-      roomUnits: number
+      areaUnits: Record<string, number>
       commonUnits: number
       perUnitPrice: number
-      hallCost: number
-      roomCost: number
+      areaCosts: Record<string, number>
       commonCost: number
     }
     splits: {
@@ -79,6 +74,9 @@ interface BillPdfProps {
       commonCost: number
       totalAmount: number
     }[]
+  }
+  flat?: {
+    areas: { slug: string; label: string }[]
   }
   currency?: CurrencyCode
 }
@@ -95,7 +93,9 @@ function fmtDate(d: string) {
   })
 }
 
-export function BillPdfDocument({ bill, currency = DEFAULT_CURRENCY }: BillPdfProps) {
+export function BillPdfDocument({ bill, flat, currency = DEFAULT_CURRENCY }: BillPdfProps) {
+  const getAreaLabel = (slug: string) => flat?.areas.find((a) => a.slug === slug)?.label || slug
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -122,18 +122,14 @@ export function BillPdfDocument({ bill, currency = DEFAULT_CURRENCY }: BillPdfPr
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Area Breakdown</Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>
-              Hall: {bill.submeterReadings.hall.previous} to {bill.submeterReadings.hall.current} = {bill.computed.hallUnits} units
-            </Text>
-            <Text style={styles.value}>{fmt(bill.computed.hallCost, currency)}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>
-              Room: {bill.submeterReadings.room.previous} to {bill.submeterReadings.room.current} = {bill.computed.roomUnits} units
-            </Text>
-            <Text style={styles.value}>{fmt(bill.computed.roomCost, currency)}</Text>
-          </View>
+          {Object.entries(bill.submeterReadings).map(([slug, reading]) => (
+            <View key={slug} style={styles.row}>
+              <Text style={styles.label}>
+                {getAreaLabel(slug)}: {reading.previous} to {reading.current} = {bill.computed.areaUnits[slug]} units
+              </Text>
+              <Text style={styles.value}>{fmt(bill.computed.areaCosts[slug] || 0, currency)}</Text>
+            </View>
+          ))}
           <View style={styles.row}>
             <Text style={styles.label}>Common: {bill.computed.commonUnits} units</Text>
             <Text style={styles.value}>{fmt(bill.computed.commonCost, currency)}</Text>
@@ -154,7 +150,7 @@ export function BillPdfDocument({ bill, currency = DEFAULT_CURRENCY }: BillPdfPr
           {bill.splits.map((s, i) => (
             <View key={i} style={styles.tableRow}>
               <Text style={styles.col1}>{s.roommateName}</Text>
-              <Text style={styles.col2}>{s.area}</Text>
+              <Text style={styles.col2}>{getAreaLabel(s.area)}</Text>
               <Text style={styles.col3}>{s.daysStayed}</Text>
               <Text style={styles.col4}>{s.areaSharePercent}%</Text>
               <Text style={styles.col5}>{fmt(s.areaCost, currency)}</Text>

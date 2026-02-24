@@ -1,8 +1,3 @@
-export interface SubmeterInput {
-  hall: { previous: number; current: number }
-  room: { previous: number; current: number }
-}
-
 export interface RoommateInput {
   roommateId: string
   roommateName: string
@@ -13,17 +8,15 @@ export interface RoommateInput {
 export interface BillInput {
   totalBill: number
   totalUnits: number
-  submeterReadings: SubmeterInput
+  submeterReadings: Record<string, { previous: number; current: number }>
   roommates: RoommateInput[]
 }
 
 export interface ComputedBill {
-  hallUnits: number
-  roomUnits: number
+  areaUnits: Record<string, number>
   commonUnits: number
   perUnitPrice: number
-  hallCost: number
-  roomCost: number
+  areaCosts: Record<string, number>
   commonCost: number
 }
 
@@ -46,33 +39,53 @@ export interface BillResult {
 export function calculateBill(input: BillInput): BillResult {
   const { totalBill, totalUnits, submeterReadings, roommates } = input
 
-  const hallUnits =
-    submeterReadings.hall.current - submeterReadings.hall.previous
-  const roomUnits =
-    submeterReadings.room.current - submeterReadings.room.previous
-  const commonUnits = totalUnits - (hallUnits + roomUnits)
+  // Calculate units for each area
+  const areaUnits: Record<string, number> = {}
+  let totalAreaUnits = 0
+
+  for (const [area, reading] of Object.entries(submeterReadings)) {
+    const units = reading.current - reading.previous
+    areaUnits[area] = units
+    totalAreaUnits += units
+  }
+
+  const commonUnits = totalUnits - totalAreaUnits
   const perUnitPrice = totalUnits > 0 ? totalBill / totalUnits : 0
 
-  const hallCost = hallUnits * perUnitPrice
-  const roomCost = roomUnits * perUnitPrice
+  // Calculate cost for each area
+  const areaCosts: Record<string, number> = {}
+  for (const [area, units] of Object.entries(areaUnits)) {
+    areaCosts[area] = units * perUnitPrice
+  }
+
   const commonCost = commonUnits * perUnitPrice
 
-  const hallRoommates = roommates.filter((r) => r.area === "hall")
-  const roomRoommates = roommates.filter((r) => r.area === "room")
+  // Group roommates by area and calculate totals
+  const areaGroups: Record<string, typeof roommates> = {}
+  for (const roommate of roommates) {
+    if (!areaGroups[roommate.area]) {
+      areaGroups[roommate.area] = []
+    }
+    areaGroups[roommate.area].push(roommate)
+  }
 
-  const hallTotalDays = hallRoommates.reduce((sum, r) => sum + r.daysStayed, 0)
-  const roomTotalDays = roomRoommates.reduce((sum, r) => sum + r.daysStayed, 0)
-  const totalPersonDays = hallTotalDays + roomTotalDays
+  // Calculate total days per area
+  const areaTotalDays: Record<string, number> = {}
+  for (const [area, areaRoommates] of Object.entries(areaGroups)) {
+    areaTotalDays[area] = areaRoommates.reduce((sum, r) => sum + r.daysStayed, 0)
+  }
 
+  const totalPersonDays = Object.values(areaTotalDays).reduce((sum, days) => sum + days, 0)
+
+  // Calculate splits for each roommate
   const splits: RoommateSplit[] = roommates.map((r) => {
-    const isHall = r.area === "hall"
-    const areaTotalDays = isHall ? hallTotalDays : roomTotalDays
-    const areaBaseCost = isHall ? hallCost : roomCost
+    const areaTotalDay = areaTotalDays[r.area] || 0
+    const areaBaseCost = areaCosts[r.area] || 0
 
     const areaSharePercent =
-      areaTotalDays > 0 ? (r.daysStayed / areaTotalDays) * 100 : 0
+      areaTotalDay > 0 ? (r.daysStayed / areaTotalDay) * 100 : 0
     const areaCostShare =
-      areaTotalDays > 0 ? areaBaseCost * (r.daysStayed / areaTotalDays) : 0
+      areaTotalDay > 0 ? areaBaseCost * (r.daysStayed / areaTotalDay) : 0
     const commonCostShare =
       totalPersonDays > 0
         ? commonCost * (r.daysStayed / totalPersonDays)
@@ -93,12 +106,14 @@ export function calculateBill(input: BillInput): BillResult {
 
   return {
     computed: {
-      hallUnits: Math.round(hallUnits * 100) / 100,
-      roomUnits: Math.round(roomUnits * 100) / 100,
+      areaUnits: Object.fromEntries(
+        Object.entries(areaUnits).map(([k, v]) => [k, Math.round(v * 100) / 100])
+      ),
       commonUnits: Math.round(commonUnits * 100) / 100,
       perUnitPrice: Math.round(perUnitPrice * 100) / 100,
-      hallCost: Math.round(hallCost * 100) / 100,
-      roomCost: Math.round(roomCost * 100) / 100,
+      areaCosts: Object.fromEntries(
+        Object.entries(areaCosts).map(([k, v]) => [k, Math.round(v * 100) / 100])
+      ),
       commonCost: Math.round(commonCost * 100) / 100,
     },
     splits,

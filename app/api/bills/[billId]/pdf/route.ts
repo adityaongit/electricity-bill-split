@@ -21,9 +21,10 @@ export async function GET(
   const currency = (searchParams.get("currency") ?? DEFAULT_CURRENCY) as CurrencyCode
   const db = getDb()
 
-  const [bill, splits] = await Promise.all([
+  const [bill, splits, flat] = await Promise.all([
     db.collection("bills").findOne({ _id: new ObjectId(billId) }),
     db.collection("bill_splits").find({ billId: new ObjectId(billId) }).toArray(),
+    db.collection("flats").findOne({ _id: new ObjectId((bill as any).flatId) }),
   ])
 
   if (!bill) return errorResponse("Bill not found", 404)
@@ -35,18 +36,13 @@ export async function GET(
     },
     totalBill: bill.totalBill as number,
     totalUnits: bill.totalUnits as number,
-    submeterReadings: bill.submeterReadings as {
-      hall: { previous: number; current: number }
-      room: { previous: number; current: number }
-    },
+    submeterReadings: bill.submeterReadings as Record<string, { previous: number; current: number }>,
     computed: bill.computed as {
-      hallUnits: number
-      roomUnits: number
-      commonUnits: number
-      perUnitPrice: number
-      hallCost: number
-      roomCost: number
-      commonCost: number
+      areaUnits: bill.computed.areaUnits as Record<string, number>,
+      commonUnits: bill.computed.commonUnits as number,
+      perUnitPrice: bill.computed.perUnitPrice as number,
+      areaCosts: bill.computed.areaCosts as Record<string, number>,
+      commonCost: bill.computed.commonCost as number,
     },
     splits: splits.map((s) => ({
       roommateName: s.roommateName as string,
@@ -59,7 +55,11 @@ export async function GET(
     })),
   }
 
-  const element = createElement(BillPdfDocument, { bill: billData, currency })
+  const element = createElement(BillPdfDocument, {
+    bill: billData,
+    flat: flat ? { areas: flat.areas as { slug: string; label: string }[] } } : undefined,
+    currency
+  })
   const stream = await renderToStream(
     element as unknown as React.ReactElement<DocumentProps>
   )
