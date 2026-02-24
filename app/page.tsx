@@ -44,7 +44,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
               Split electricity bills
-              <span className="text-primary/70"> fairly</span> among roommates
+              <span className="text-foreground/80"> fairly</span> among roommates
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
               Use submeter readings to calculate each roommate&apos;s share accurately.
