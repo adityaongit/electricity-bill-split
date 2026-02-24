@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "@/components/theme-provider"
+import { AnalyticsProvider } from "@/components/providers/analytics-provider"
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +13,9 @@ export function Providers({ children }: { children: ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <AnalyticsProvider>
+        {children}
+      </AnalyticsProvider>
       <Toaster richColors position="top-right" />
     </ThemeProvider>
   )

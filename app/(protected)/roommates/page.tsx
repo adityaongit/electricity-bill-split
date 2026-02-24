@@ -27,6 +27,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { useDataService } from "@/lib/guest-context"
 import type { FlatData, RoommateData } from "@/lib/data-service"
+import {
+  trackRoommateAdd,
+  trackRoommateRemove,
+  trackRoommateUpdate,
+  trackCurrencyChange,
+} from "@/lib/analytics"
 
 export default function RoommatesPage() {
   const router = useRouter()
@@ -64,13 +70,16 @@ export default function RoommatesPage() {
 
     const formData = new FormData(e.currentTarget)
     const phone = (formData.get("phone") as string)?.trim()
+    const area = formData.get("area") as string
+
     try {
       await service.createRoommate(
         selectedFlat._id,
         formData.get("name") as string,
-        formData.get("area") as string,
+        area,
         phone || undefined
       )
+      trackRoommateAdd()
       toast.success("Roommate added")
       setDialogOpen(false)
       fetchRoommates(selectedFlat._id)
@@ -82,6 +91,7 @@ export default function RoommatesPage() {
   async function handleRemoveRoommate(id: string) {
     try {
       await service.deleteRoommate(id)
+      trackRoommateRemove()
       toast.success("Roommate removed")
       if (selectedFlat) fetchRoommates(selectedFlat._id)
     } catch (err) {
@@ -106,6 +116,7 @@ export default function RoommatesPage() {
         area: formData.get("area") as string,
         phone: phone || undefined,
       })
+      trackRoommateUpdate()
       toast.success("Roommate updated")
       setEditDialogOpen(false)
       setEditingRoommate(null)

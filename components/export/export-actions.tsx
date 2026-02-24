@@ -8,6 +8,13 @@ import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { toast } from "sonner"
 import { generateBillFilename } from "@/lib/utils"
+import {
+  trackExportPDF,
+  trackExportPDFFailed,
+  trackExportImage,
+  trackExportImageFailed,
+  trackShareWhatsApp,
+} from "@/lib/analytics"
 
 interface ExportActionsProps {
   billId: string
@@ -60,8 +67,11 @@ export function ExportActions({
       a.download = generateBillFilename(bill.billingPeriod.from, bill.billingPeriod.to, "pdf")
       a.click()
       URL.revokeObjectURL(url)
+      trackExportPDF(billId)
       toast.success("PDF downloaded")
-    } catch {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error"
+      trackExportPDFFailed(billId, errorMsg)
       toast.error("Failed to download PDF")
     }
     setExporting(null)
@@ -98,8 +108,11 @@ export function ExportActions({
 
       // Clean up
       document.body.removeChild(clone)
+      trackExportImage(billId)
       toast.success("Image downloaded")
-    } catch {
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Unknown error"
+      trackExportImageFailed(billId, errorMsg)
       toast.error("Failed to download image")
     }
     setExporting(null)
@@ -107,6 +120,7 @@ export function ExportActions({
 
   function handleWhatsApp() {
     const url = getWhatsAppUrl(bill, currency)
+    trackShareWhatsApp(billId, "group")
     window.open(url, "_blank")
   }
 

@@ -10,6 +10,7 @@ import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import type { BillData } from "@/lib/data-service"
+import { trackBillHistoryView } from "@/lib/analytics"
 
 interface Pagination {
   page: number
@@ -38,6 +39,7 @@ export default function BillHistoryPage() {
       const result = await service.getBills(flat._id, page, 10)
       setBills(result.bills)
       setPagination(result.pagination)
+      trackBillHistoryView(result.pagination.total)
       setLoading(false)
     }
     load()

@@ -22,6 +22,7 @@ import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { getIndividualWhatsAppUrl } from "@/lib/whatsapp"
 import type { BillDetailData, RoommateData, FlatData } from "@/lib/data-service"
+import { trackBillView } from "@/lib/analytics"
 
 export default function BillDetailPage({
   params,
@@ -41,6 +42,7 @@ export default function BillDetailPage({
       const billData = await service.getBill(billId)
       setBill(billData)
       if (billData) {
+        trackBillView(billId)
         const [mates, flatData] = await Promise.all([
           service.getRoommates(billData.flatId),
           service.getFlats().then(flats => flats.find(f => f._id === billData.flatId) || null)

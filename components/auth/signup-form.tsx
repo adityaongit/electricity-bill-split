@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import {
+  trackSignupInitiate,
+  trackSignupSuccess,
+  trackSignupFailed,
+} from "@/lib/analytics"
 
 export function SignupForm() {
   const router = useRouter()
@@ -16,6 +21,7 @@ export function SignupForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
+    trackSignupInitiate("email")
 
     const formData = new FormData(e.currentTarget)
     const name = formData.get("name") as string
@@ -30,11 +36,13 @@ export function SignupForm() {
     })
 
     if (error) {
+      trackSignupFailed("email", error.message)
       toast.error(error.message ?? "Failed to create account")
       setLoading(false)
       return
     }
 
+    trackSignupSuccess("email")
     await migrateGuestData()
     router.push("/dashboard")
   }

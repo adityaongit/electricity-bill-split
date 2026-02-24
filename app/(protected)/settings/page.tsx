@@ -30,6 +30,11 @@ import { useCurrency } from "@/lib/currency-context"
 import { SUPPORTED_CURRENCIES } from "@/lib/currency"
 import type { FlatData } from "@/lib/data-service"
 import { Home, Trash2, Plus, User, Mail, CreditCard } from "lucide-react"
+import {
+  trackFlatCreate,
+  trackFlatDelete,
+  trackCurrencyChange,
+} from "@/lib/analytics"
 
 interface UpiDialogState {
   open: boolean
@@ -80,6 +85,7 @@ export default function SettingsPage() {
     const formData = new FormData(form)
     try {
       const flat = await service.createFlat(formData.get("flatName") as string)
+      trackFlatCreate()
       toast.success("Flat created")
       setFlats((prev) => [flat, ...prev])
       form.reset()
@@ -93,6 +99,7 @@ export default function SettingsPage() {
   async function handleDeleteFlat(id: string) {
     try {
       await service.deleteFlat(id)
+      trackFlatDelete()
       toast.success("Flat deleted")
       setFlats((prev) => prev.filter((f) => f._id !== id))
     } catch (err) {
@@ -141,9 +148,11 @@ export default function SettingsPage() {
 
   async function handleCurrencyChange(newCurrency: string | null) {
     if (!newCurrency) return
+    const oldCurrency = currency
     setCurrencyUpdating(true)
     try {
       await setCurrency(newCurrency as any)
+      trackCurrencyChange(oldCurrency, newCurrency)
       toast.success("Currency preference updated")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update currency")

@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import {
+  trackLoginInitiate,
+  trackLoginSuccess,
+  trackLoginFailed,
+} from "@/lib/analytics"
 
 export function LoginForm() {
   const router = useRouter()
@@ -16,6 +21,7 @@ export function LoginForm() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
+    trackLoginInitiate("email")
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
@@ -28,11 +34,13 @@ export function LoginForm() {
     })
 
     if (error) {
+      trackLoginFailed("email", error.message)
       toast.error(error.message ?? "Failed to sign in")
       setLoading(false)
       return
     }
 
+    trackLoginSuccess("email")
     await migrateGuestData()
     router.push("/dashboard")
   }

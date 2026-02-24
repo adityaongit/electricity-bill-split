@@ -32,6 +32,11 @@ import { formatCurrency } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import type { FlatData, RoommateData } from "@/lib/data-service"
+import {
+  trackBillCreateInitiate,
+  trackBillCreateSuccess,
+  trackBillCreateFailed,
+} from "@/lib/analytics"
 
 export default function NewBillPage() {
   const router = useRouter()
@@ -124,6 +129,7 @@ export default function NewBillPage() {
     e.preventDefault()
     if (!selectedFlat || !preview || !dateFrom || !dateTo) return
     setSubmitting(true)
+    trackBillCreateInitiate()
 
     try {
       const result = await service.createBill({
@@ -145,10 +151,13 @@ export default function NewBillPage() {
         status: "finalized",
       })
 
+      trackBillCreateSuccess(parseFloat(totalBill), roommates.length)
       toast.success("Bill created!")
       router.push(`/bill/${result._id}`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create bill")
+      const errorMsg = err instanceof Error ? err.message : "Failed to create bill"
+      trackBillCreateFailed(errorMsg)
+      toast.error(errorMsg)
     }
 
     setSubmitting(false)

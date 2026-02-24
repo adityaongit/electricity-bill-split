@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { JsonLd } from "@/components/seo/json-ld"
@@ -96,6 +97,13 @@ export default function RootLayout({
         <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#4361ee" />
         <JsonLd />
+        {/* Umami Analytics */}
+        <Script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="d9d991ea-389d-402a-b258-371603776da2"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}

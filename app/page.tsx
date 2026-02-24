@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +17,19 @@ import {
   RefreshCw,
   ScrollText,
 } from "lucide-react"
+import { trackCTAClick } from "@/lib/analytics"
+
+function TrackedButton({ href, children, location, ...props }: { href: string; children: React.ReactNode; location: "hero" | "bottom" } & React.ComponentProps<typeof Button>) {
+  const handleClick = () => {
+    trackCTAClick(location)
+  }
+
+  return (
+    <Link href={href} onClick={handleClick}>
+      <Button {...props}>{children}</Button>
+    </Link>
+  )
+}
 
 export default function LandingPage() {
   return (
@@ -36,11 +51,9 @@ export default function LandingPage() {
               Handle common area costs, track billing history, and export results in seconds.
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-0">
-              <Link href="/signup">
-                <Button size="lg" className="min-w-[180px]">
-                  Start Splitting Free
-                </Button>
-              </Link>
+              <TrackedButton href="/signup" location="hero" size="lg" className="min-w-[180px]">
+                Start Splitting Free
+              </TrackedButton>
               <Separator dashed orientation="vertical" className="h-10 mx-4 hidden sm:block" />
               <Link href="#how-it-works">
                 <Button variant="outline" size="lg" className="min-w-[180px]">
@@ -193,11 +206,9 @@ export default function LandingPage() {
               Free forever for personal use. No credit card required.
             </p>
             <div className="mt-8">
-              <Link href="/signup">
-                <Button size="lg" className="min-w-[200px]">
-                  Get Started Free
-                </Button>
-              </Link>
+              <TrackedButton href="/signup" location="bottom" size="lg" className="min-w-[200px]">
+                Get Started Free
+              </TrackedButton>
             </div>
           </div>
         </section>

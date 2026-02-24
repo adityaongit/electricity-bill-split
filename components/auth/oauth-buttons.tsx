@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { signIn } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
+import { trackOAuthClick } from "@/lib/analytics"
 
 export function OAuthButtons() {
   const [loading, setLoading] = useState(false)
 
   async function handleGoogleSignIn() {
     setLoading(true)
+    trackOAuthClick("google")
     await signIn.social({
       provider: "google",
       callbackURL: "/dashboard",
