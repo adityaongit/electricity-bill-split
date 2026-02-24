@@ -24,12 +24,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { SUPPORTED_CURRENCIES } from "@/lib/currency"
 import type { FlatData, AreaInput } from "@/lib/data-service"
-import { Home, Trash2, Plus, User, Mail, CreditCard, ChevronRight } from "lucide-react"
+import { Home, Trash2, Plus, User, Mail, CreditCard, ChevronRight, AlertTriangle, Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   trackFlatCreate,
   trackFlatDelete,
@@ -56,7 +74,7 @@ interface UpiDialogState {
   upiPayeeName: string
 }
 
-type CreateFlatStep = 1 | 2 | 3
+type CreateFlatStep = 1 | 2 | 3 | 'success'
 
 function CreateFlatDialog({
   open,
@@ -67,9 +85,11 @@ function CreateFlatDialog({
   onOpenChange: (open: boolean) => void
   onSuccess: (flat: FlatData) => void
 }) {
+  const router = useRouter()
   const { service } = useDataService()
   const [step, setStep] = useState<CreateFlatStep>(1)
   const [creating, setCreating] = useState(false)
+  const [createdFlat, setCreatedFlat] = useState<FlatData | null>(null)
 
   // Step 1: Flat name
   const [flatName, setFlatName] = useState("")
@@ -84,11 +104,14 @@ function CreateFlatDialog({
     setFlatName("")
     setNumRooms(2)
     setRoomTypes([])
-    setStep(1)
+    setCreatedFlat(null)
+    setStep(1 as CreateFlatStep)
   }
 
   function handleOpenChange(open: boolean) {
-    if (!open) resetForm()
+    if (!open) {
+      resetForm()
+    }
     onOpenChange(open)
   }
 
@@ -124,10 +147,9 @@ function CreateFlatDialog({
 
       const flat = await service.createFlat(flatName.trim(), areas)
       trackFlatCreate()
-      toast.success("Flat created successfully!")
-      resetForm()
-      onOpenChange(false)
+      setCreatedFlat(flat)
       onSuccess(flat)
+      setStep('success')
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create flat")
     }
@@ -204,33 +226,38 @@ function CreateFlatDialog({
                 <div key={i} className="flex items-center gap-2 p-3 rounded-lg border bg-muted/20">
                   <span className="text-sm font-medium w-20 shrink-0">Room {i + 1}</span>
                   <div className="flex-1 flex gap-2">
-                    <select
-                      className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                      value={rt.preset}
-                      onChange={(e) => {
-                        const new = [...roomTypes]
-                        new[i] = { ...rt, preset: e.target.value, custom: undefined }
-                        setRoomTypes(new)
-                      }}
-                    >
-                      {ROOM_TYPE_PRESETS.map((preset) => (
-                        <option key={preset.value} value={preset.value}>
-                          {preset.label}
-                        </option>
-                      ))}
-                      <option value="other">Other...</option>
-                    </select>
-                    {rt.preset === "other" && (
+                    {rt.preset === "other" ? (
                       <Input
-                        placeholder="Custom type"
+                        placeholder="Enter room type..."
                         className="flex-1"
                         value={rt.custom || ""}
                         onChange={(e) => {
-                          const new = [...roomTypes]
-                          new[i] = { ...rt, custom: e.target.value }
-                          setRoomTypes(new)
+                          const updated = [...roomTypes]
+                          updated[i] = { ...rt, custom: e.target.value }
+                          setRoomTypes(updated)
                         }}
+                        autoFocus
                       />
+                    ) : (
+                      <>
+                        <Select value={rt.preset} onValueChange={(value) => {
+                          const updated = [...roomTypes]
+                          updated[i] = { ...rt, preset: value, custom: undefined }
+                          setRoomTypes(updated)
+                        }}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROOM_TYPE_PRESETS.map((preset) => (
+                              <SelectItem key={preset.value} value={preset.value}>
+                                {preset.label}
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="other">Custom...</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </>
                     )}
                   </div>
                 </div>
@@ -247,6 +274,55 @@ function CreateFlatDialog({
                 className="w-full sm:w-auto"
               >
                 {creating ? "Creating..." : "Create Flat"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 'success' && (
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center text-center py-4">
+              <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-4">
+                <Check className="h-8 w-8 text-green-600 dark:text-green-500" />
+              </div>
+              <h3 className="text-lg font-semibold">Flat Created Successfully!</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                "{createdFlat?.name}" is ready to use
+              </p>
+            </div>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onOpenChange(false)
+                  resetForm()
+                }}
+                className="w-full sm:w-auto"
+              >
+                Close
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false)
+                  resetForm()
+                  router.push('/roommates')
+                }}
+                className="w-full sm:w-auto"
+              >
+                Add Roommates
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  onOpenChange(false)
+                  resetForm()
+                  router.push('/bill/new')
+                }}
+                className="w-full sm:w-auto"
+              >
+                Create Bill
               </Button>
             </DialogFooter>
           </div>
@@ -271,6 +347,8 @@ export default function SettingsPage() {
     upiPayeeName: "",
   })
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [clearDataDialogOpen, setClearDataDialogOpen] = useState(false)
+  const [clearingData, setClearingData] = useState(false)
 
   useEffect(() => {
     service.getFlats().then((data) => {
@@ -352,6 +430,23 @@ export default function SettingsPage() {
       toast.error(err instanceof Error ? err.message : "Failed to update currency")
     }
     setCurrencyUpdating(false)
+  }
+
+  async function handleClearGuestData() {
+    setClearingData(true)
+    try {
+      if (service.clearAllData) {
+        await service.clearAllData()
+        toast.success("All data cleared successfully")
+        setFlats([])
+      } else {
+        toast.error("This feature is only available in guest mode")
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to clear data")
+    }
+    setClearingData(false)
+    setClearDataDialogOpen(false)
   }
 
   return (
@@ -506,6 +601,32 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {isGuest && (
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Clear all your data from the browser. This will permanently delete all flats, roommates, and bills stored in guest mode.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setClearDataDialogOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear All Guest Data
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <CreateFlatDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
@@ -561,6 +682,28 @@ export default function SettingsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={clearDataDialogOpen} onOpenChange={setClearDataDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear All Guest Data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all your flats, roommates, and bills stored in the browser.
+              This action cannot be undone. You will need to create a new flat to continue using the app.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearingData}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearGuestData}
+              disabled={clearingData}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {clearingData ? "Clearing..." : "Clear All Data"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
