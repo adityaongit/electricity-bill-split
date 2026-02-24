@@ -24,9 +24,21 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: process.cwd(),
-  },
+  // Use SWC minification for faster builds and smaller bundles
+  swcMinify: true,
+
+  // Optimize CSS by inlining critical CSS
+  optimizeCss: true,
+
+  // Enable React strict mode for better performance
+  reactStrictMode: true,
+
+  // Compress all assets
+  compress: true,
+
+  // Power optimization for production builds
+  productionBrowserSourceMaps: false,
+
   async headers() {
     return [
       {
@@ -62,6 +74,25 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         headers: securityHeaders,
+      },
+      // Add compression headers for static assets
+      {
+        source: "/:all*(svg|jpg|jpeg|png|ico|webp)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/:all*(js|css)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
       },
     ];
   },

@@ -8,7 +8,7 @@ import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { FaqSchema, faqs } from "@/components/seo/faq-schema"
 import { HowToSchema } from "@/components/seo/howto-schema"
-import { FaqAccordion } from "@/components/faq-accordion"
+import dynamic from "next/dynamic"
 import {
   BarChart3,
   Home,
@@ -18,6 +18,12 @@ import {
   ScrollText,
 } from "lucide-react"
 import { trackCTAClick } from "@/lib/analytics"
+
+// Lazy load FAQ accordion - it's below the fold and not critical for initial render
+const FaqAccordion = dynamic(() => import("@/components/faq-accordion").then(mod => ({ default: mod.FaqAccordion })), {
+  loading: () => <div className="h-64 animate-pulse bg-muted/20 rounded-lg" />,
+  ssr: true, // Still SSR for SEO but code split for smaller initial bundle
+})
 
 function TrackedButton({ href, children, location, ...props }: { href: string; children: React.ReactNode; location: "hero" | "bottom" } & React.ComponentProps<typeof Button>) {
   const handleClick = () => {

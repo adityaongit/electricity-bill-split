@@ -8,11 +8,13 @@ import { JsonLd } from "@/components/seo/json-ld"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 })
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -96,6 +98,10 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#4361ee" />
+        {/* Preconnect to external origins for faster loading */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preconnect" href="https://cloud.umami.is" />
         <JsonLd />
         {/* Umami Analytics */}
         <Script
