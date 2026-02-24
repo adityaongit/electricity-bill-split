@@ -80,82 +80,39 @@ let dbPromise: Promise<IDBPDatabase<GuestDBSchema>> | null = null
 
 export function openGuestDb() {
   if (!dbPromise) {
-    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 4, {
-      upgrade(db, oldVersion) {
-        // Version 1 schema
-        if (oldVersion < 1) {
-          db.createObjectStore("flats", { keyPath: "_id" })
+    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 1, {
+      upgrade(db) {
+        db.createObjectStore("flats", { keyPath: "_id" })
 
-          const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
-          roommateStore.createIndex("flatId", "flatId")
+        const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
+        roommateStore.createIndex("flatId", "flatId")
 
-          const billStore = db.createObjectStore("bills", { keyPath: "_id" })
-          billStore.createIndex("flatId", "flatId")
+        const billStore = db.createObjectStore("bills", { keyPath: "_id" })
+        billStore.createIndex("flatId", "flatId")
 
-          const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
-          splitStore.createIndex("billId", "billId")
-        }
+        const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
+        splitStore.createIndex("billId", "billId")
 
-        // Version 2: Add UPI fields to flats
-        if (oldVersion < 2) {
-          // IndexedDB automatically handles new optional fields
-        }
-
-        // Version 3: Add user_settings store
-        if (oldVersion < 3) {
-          db.createObjectStore("user_settings", { keyPath: "key" })
-        }
-
-        // Version 4: Migrate to dynamic submeterReadings
-        if (oldVersion < 4) {
-          // Migrate existing bills to new format
-          const billStore = db.transaction("bills", "readwrite").objectStore("bills")
-
-          billStore.iterateCursor((cursor) => {
-            const oldBill = cursor.value as any
-            if (oldBill.submeterReadings) {
-              // Convert old format {hall: {...}, room: {...}} to new Record format
-              const newReadings: Record<string, { previous: number; current: number }> = {}
-              if (oldBill.submeterReadings.hall) {
-                newReadings.hall = oldBill.submeterReadings.hall
-              }
-              if (oldBill.submeterReadings.room) {
-                newReadings.room = oldBill.submeterReadings.room
-              }
-
-              // Update with new computed format
-              const newComputed = {
-                areaUnits: {},
-                commonUnits: oldBill.computed.commonUnits,
-                perUnitPrice: oldBill.computed.perUnitPrice,
-                areaCosts: {},
-                commonCost: oldBill.computed.commonCost,
-              }
-              if (oldBill.computed.hallUnits !== undefined) {
-                newComputed.areaUnits.hall = oldBill.computed.hallUnits
-              }
-              if (oldBill.computed.roomUnits !== undefined) {
-                newComputed.areaUnits.room = oldBill.computed.roomUnits
-              }
-              if (oldBill.computed.hallCost !== undefined) {
-                newComputed.areaCosts.hall = oldBill.computed.hallCost
-              }
-              if (oldBill.computed.roomCost !== undefined) {
-                newComputed.areaCosts.room = oldBill.computed.roomCost
-              }
-
-              cursor.update({
-                ...oldBill,
-                submeterReadings: newReadings,
-                computed: newComputed,
-              })
-            }
-          })
-        }
+        db.createObjectStore("user_settings", { keyPath: "key" })
       },
     })
   }
   return dbPromise
+}
+
+export async function clearGuestDb() {
+  const db = await openGuestDb()
+  const tx = db.transaction(['flats', 'roommates', 'bills', 'bill_splits', 'user_settings'], 'readwrite')
+
+  await Promise.all([
+    tx.objectStore('flats').clear(),
+    tx.objectStore('roommates').clear(),
+    tx.objectStore('bills').clear(),
+    tx.objectStore('bill_splits').clear(),
+    tx.objectStore('user_settings').clear(),
+  ])
+
+  await tx.done
 }
 
 export type { GuestDBSchema }
