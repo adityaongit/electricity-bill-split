@@ -24,12 +24,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // Use SWC minification for faster builds and smaller bundles
-  swcMinify: true,
-
-  // Optimize CSS by inlining critical CSS
-  optimizeCss: true,
-
   // Enable React strict mode for better performance
   reactStrictMode: true,
 
