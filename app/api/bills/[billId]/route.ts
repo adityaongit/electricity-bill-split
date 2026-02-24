@@ -4,44 +4,29 @@ import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api
 
 export const dynamic = "force-dynamic"
 
-export async function GET(
-  _request: Request,
+export async function DELETE(
+  request: Request,
   { params }: { params: Promise<{ billId: string }> }
 ) {
-  const { error } = await getSessionOrUnauthorized()
+  const { session, error } = await getSessionOrUnauthorized()
   if (error) return error
 
   const { billId } = await params
   const db = getDb()
 
-  const [bill, splits] = await Promise.all([
-    db.collection("bills").findOne({ _id: new ObjectId(billId) }),
-    db
-      .collection("bill_splits")
-      .find({ billId: new ObjectId(billId) })
-      .toArray(),
-  ])
-
+  // Check if bill exists and belongs to user's flat
+  const bill = await db.collection("bills").findOne({ _id: new ObjectId(billId) })
   if (!bill) return errorResponse("Bill not found", 404)
 
-  return jsonResponse({ ...bill, splits })
-}
+  // Verify user owns this flat
+  const flat = await db.collection("flats").findOne({ _id: new ObjectId(bill.flatId), ownerId: session.user.id })
+  if (!flat) return errorResponse("Unauthorized", 403)
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ billId: string }> }
-) {
-  const { error } = await getSessionOrUnauthorized()
-  if (error) return error
+  // Delete bill splits first
+  await db.collection("bill_splits").deleteMany({ billId: new ObjectId(billId) })
 
-  const { billId } = await params
-  const db = getDb()
+  // Delete bill
+  await db.collection("bills").deleteOne({ _id: new ObjectId(billId) })
 
-  const [billResult] = await Promise.all([
-    db.collection("bills").deleteOne({ _id: new ObjectId(billId) }),
-    db.collection("bill_splits").deleteMany({ billId: new ObjectId(billId) }),
-  ])
-
-  if (billResult.deletedCount === 0) return errorResponse("Bill not found", 404)
   return jsonResponse({ deleted: true })
 }
