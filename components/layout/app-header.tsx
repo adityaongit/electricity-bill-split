@@ -16,6 +16,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
@@ -31,7 +32,6 @@ import {
   LogOut,
   UserPlus,
   ArrowRightLeft,
-  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/layout/logo"
@@ -210,33 +210,29 @@ export function AppHeader() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              showCloseButton={false}
-              className="w-full sm:w-80 gap-0 px-0 pb-0 pt-0"
+              className="w-full sm:w-80 flex flex-col p-0 gap-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
             >
-              {/* Custom Close Button - Top Left, safely positioned */}
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="absolute top-4 left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              {/* Accessibility: Hidden Title and Description */}
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              <SheetDescription className="sr-only">
+                Main navigation menu with quick access to dashboard, bills, roommates, and settings
+              </SheetDescription>
 
               {/* Header Section with Logo */}
-              <div className="flex flex-col border-b px-6 pt-14 pb-6 bg-muted/30">
-                <div className="flex items-center gap-3 mb-2">
+              <div className="flex flex-col border-b px-6 py-5 bg-muted/30 shrink-0">
+                <div className="flex items-center gap-3">
                   <Logo href="/dashboard" />
                 </div>
-                <p className="text-sm text-muted-foreground">Navigate your bills</p>
+                <p className="text-sm text-muted-foreground mt-1">Navigate your bills</p>
               </div>
 
-              {/* Navigation Items */}
+              {/* Navigation Items - scrollable */}
               <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
                 <NavLinks mobile onClick={handleNavClick} />
               </nav>
 
-              {/* Bottom User Section */}
-              <div className="border-t bg-muted/20 px-4 py-5 space-y-5">
+              {/* Bottom User Section - fixed at bottom */}
+              <div className="border-t bg-muted/20 px-4 py-5 space-y-5 shrink-0">
                 {/* Theme Toggle Row */}
                 <div className="flex items-center justify-between px-2">
                   <span className="text-sm font-medium">Appearance</span>
@@ -245,7 +241,7 @@ export function AppHeader() {
 
                 {/* User Profile Card */}
                 <div className="flex items-center gap-3 rounded-xl bg-background p-3 border shadow-sm">
-                  <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+                  <Avatar className="h-10 w-10 ring-2 ring-primary/10 shrink-0">
                     <AvatarFallback className="text-sm font-semibold bg-primary text-primary-foreground">
                       {initials}
                     </AvatarFallback>
@@ -267,7 +263,6 @@ export function AppHeader() {
                         size="default"
                         className="w-full justify-start gap-2 h-11 font-medium"
                         asChild
-                        onClick={() => setMobileMenuOpen(false)}
                       >
                         <Link href="/signup" className="flex items-center gap-2">
                           <UserPlus className="h-4 w-4" />
