@@ -210,6 +210,7 @@ export function AppHeader() {
             </SheetTrigger>
             <SheetContent
               side="right"
+              showCloseButton={false}
               className="w-full sm:w-80 flex flex-col p-0 gap-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
             >
               {/* Accessibility: Hidden Title and Description */}
@@ -218,12 +219,24 @@ export function AppHeader() {
                 Main navigation menu with quick access to dashboard, bills, roommates, and settings
               </SheetDescription>
 
-              {/* Header Section with Logo */}
-              <div className="flex flex-col border-b px-6 py-5 bg-muted/30 shrink-0">
+              {/* Header Section with Logo and Close Button */}
+              <div className="relative flex flex-col border-b px-6 py-5 bg-muted/30 shrink-0">
                 <div className="flex items-center gap-3">
                   <Logo href="/dashboard" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Navigate your bills</p>
+
+                {/* Close Button - aligned with logo */}
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+                  aria-label="Close menu"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                </button>
               </div>
 
               {/* Navigation Items - scrollable */}
