@@ -129,7 +129,6 @@ export default function NewBillPage() {
         submeterReadings[area.slug]?.previous &&
         submeterReadings[area.slug]?.current
     )
-    )
 
     if (!bill || !units || !allReadingsFilled || roommateInputs.length === 0) return null
 
