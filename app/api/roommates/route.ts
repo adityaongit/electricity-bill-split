@@ -4,6 +4,8 @@ import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api
 import { createRoommateSchema } from "@/lib/validations"
 import { NextRequest } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   const { error } = await getSessionOrUnauthorized()
   if (error) return error

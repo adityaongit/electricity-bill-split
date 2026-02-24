@@ -5,6 +5,8 @@ import { createBillSchema } from "@/lib/validations"
 import { calculateBill } from "@/lib/bill-calculator"
 import { NextRequest } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   const { error } = await getSessionOrUnauthorized()
   if (error) return error

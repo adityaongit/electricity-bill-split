@@ -34,22 +34,13 @@ function isUmamiAvailable(): boolean {
  * @param data - Additional data to include with the event
  */
 export function track(eventName: string, data?: Record<string, unknown>): void {
-  if (!isUmamiAvailable()) {
-    // Only log in development for debugging
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Analytics] Umami not loaded. Event:", eventName, data)
-    }
-    return
-  }
+  if (!isUmamiAvailable()) return
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     window.umami?.track(eventName, data)
-    if (process.env.NODE_ENV === "development") {
-      console.log("[Analytics] Tracked:", eventName, data)
-    }
-  } catch (error) {
-    console.error("[Analytics] Error tracking event:", error)
+  } catch {
+    // Silently fail to avoid affecting user experience
   }
 }
 

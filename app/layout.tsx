@@ -98,9 +98,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#4361ee" />
-        {/* Preconnect to external origins for faster loading */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Preconnect to Umami for analytics - only external resource needed */}
         <link rel="preconnect" href="https://cloud.umami.is" />
         <JsonLd />
         {/* Umami Analytics */}

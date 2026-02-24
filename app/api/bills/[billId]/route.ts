@@ -2,6 +2,8 @@ import { ObjectId } from "mongodb"
 import { getDb } from "@/lib/db"
 import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api-utils"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ billId: string }> }

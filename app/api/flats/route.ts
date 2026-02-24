@@ -2,6 +2,8 @@ import { getDb } from "@/lib/db"
 import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api-utils"
 import { createFlatSchema } from "@/lib/validations"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   const { session, error } = await getSessionOrUnauthorized()
   if (error) return error

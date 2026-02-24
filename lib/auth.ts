@@ -7,8 +7,12 @@ const globalForMongo = globalThis as typeof globalThis & {
 }
 
 function getAuthDb() {
+  const mongoUri = process.env.MONGODB_URI
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI environment variable is not set")
+  }
   if (!globalForMongo._authMongoClient) {
-    globalForMongo._authMongoClient = new MongoClient(process.env.MONGODB_URI!)
+    globalForMongo._authMongoClient = new MongoClient(mongoUri)
   }
   return globalForMongo._authMongoClient.db("elec-bill")
 }
@@ -16,19 +20,31 @@ function getAuthDb() {
 let _auth: ReturnType<typeof betterAuth> | null = null
 
 export function getAuth() {
-  if (!_auth) {
-    _auth = betterAuth({
-      database: mongodbAdapter(getAuthDb()),
-      emailAndPassword: {
-        enabled: true,
-      },
-      socialProviders: {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID!,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        },
-      },
-    })
+  if (_auth) {
+    return _auth
   }
+
+  // Ensure we have all required env vars before initializing
+  const mongoUri = process.env.MONGODB_URI
+  const googleClientId = process.env.GOOGLE_CLIENT_ID
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
+
+  if (!mongoUri || !googleClientId || !googleClientSecret) {
+    throw new Error("Missing required environment variables for auth initialization")
+  }
+
+  _auth = betterAuth({
+    database: mongodbAdapter(getAuthDb()),
+    emailAndPassword: {
+      enabled: true,
+    },
+    socialProviders: {
+      google: {
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
+      },
+    },
+  })
+
   return _auth
 }

@@ -7,6 +7,8 @@ import { getSessionOrUnauthorized, errorResponse } from "@/lib/api-utils"
 import { BillPdfDocument } from "@/components/export/bill-pdf-document"
 import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/currency"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ billId: string }> }

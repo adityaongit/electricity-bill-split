@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db"
 import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api-utils"
 import { updateFlatSchema } from "@/lib/validations"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ flatId: string }> }

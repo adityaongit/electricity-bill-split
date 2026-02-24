@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db"
 import { getSessionOrUnauthorized, errorResponse, jsonResponse } from "@/lib/api-utils"
 import { DEFAULT_CURRENCY } from "@/lib/currency"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   const { session, error } = await getSessionOrUnauthorized()
   if (error) return error

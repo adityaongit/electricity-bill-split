@@ -14,26 +14,16 @@ interface AnalyticsProviderProps {
  */
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
   useEffect(() => {
-    // Verify Umami script is loaded
-    const checkUmami = () => {
-      if (typeof window !== "undefined" && window.umami) {
-        console.log("[Analytics] Umami loaded successfully")
-        return true
-      }
-      return false
-    }
+    // Lightweight check - no console in production
+    if (typeof window === "undefined") return
 
-    // Check immediately
-    if (!checkUmami()) {
-      // If not loaded immediately, check again after a short delay
-      const timeoutId = setTimeout(() => {
-        if (!checkUmami()) {
-          console.warn("[Analytics] Umami script not detected. Analytics may not work.")
-        }
-      }, 1000)
+    // Small timeout to ensure script has loaded
+    const timeoutId = setTimeout(() => {
+      // Silently verify Umami is available
+      window.umami || undefined
+    }, 100)
 
-      return () => clearTimeout(timeoutId)
-    }
+    return () => clearTimeout(timeoutId)
   }, [])
 
   return <>{children}</>

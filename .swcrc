@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json.schemastore.org/swcrc",
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": true,
+      "dynamicImport": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      },
+      "optimizer": {
+        "globals": {
+          "vars": {
+            "process.env.NODE_ENV": "production"
+          }
+        }
+      }
+    },
+    "target": "es2022",
+    "loose": false,
+    "externalHelpers": true
+  },
+  "module": {
+    "type": "es6"
+  },
+  "minify": true,
+  "sourceMaps": false,
+  "env": {
+    "production": {
+      "minify": true
+    }
+  }
+}

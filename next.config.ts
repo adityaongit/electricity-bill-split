@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
   // Power optimization for production builds
   productionBrowserSourceMaps: false,
 
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'date-fns', '@base-ui/react'],
+  },
+
+  // Turbopack config
+  turbopack: {},
+
   async headers() {
     return [
       {
