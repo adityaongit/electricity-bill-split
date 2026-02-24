@@ -13,7 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import {
@@ -26,6 +31,7 @@ import {
   LogOut,
   UserPlus,
   ArrowRightLeft,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/layout/logo"
@@ -38,7 +44,13 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ]
 
-function NavLinks({ onClick, mobile = false }: { onClick?: () => void; mobile?: boolean }) {
+function NavLinks({
+  onClick,
+  mobile = false,
+}: {
+  onClick?: () => void
+  mobile?: boolean
+}) {
   const pathname = usePathname()
 
   return (
@@ -54,14 +66,22 @@ function NavLinks({ onClick, mobile = false }: { onClick?: () => void; mobile?: 
               href={item.href}
               onClick={onClick}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "group relative flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
-              <Icon className="h-4 w-4" />
-              {item.label}
+              <Icon
+                className={cn(
+                  "h-5 w-5 transition-colors",
+                  isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground",
+                )}
+              />
+              <span className="flex-1">{item.label}</span>
+              {isActive && (
+                <span className="absolute inset-0 rounded-xl ring-2 ring-primary/50 ring-offset-2 ring-offset-background" />
+              )}
             </Link>
           )
         }
@@ -73,7 +93,7 @@ function NavLinks({ onClick, mobile = false }: { onClick?: () => void; mobile?: 
             onClick={onClick}
             className={cn(
               "text-sm font-medium transition-colors hover:text-foreground",
-              isActive ? "text-foreground" : "text-muted-foreground"
+              isActive ? "text-foreground" : "text-muted-foreground",
             )}
           >
             {item.label}
@@ -90,6 +110,7 @@ export function AppHeader() {
   const [mounted, setMounted] = useState(false)
   const [initials, setInitials] = useState("")
   const [displayName, setDisplayName] = useState("")
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -108,6 +129,7 @@ export function AppHeader() {
   }, [isGuest, session?.user?.name])
 
   function handleLeave() {
+    setMobileMenuOpen(false)
     if (isGuest) {
       document.cookie = "guest=; path=/; max-age=0"
       window.location.href = "/login"
@@ -116,6 +138,10 @@ export function AppHeader() {
         window.location.href = "/login"
       })
     }
+  }
+
+  function handleNavClick() {
+    setMobileMenuOpen(false)
   }
 
   return (
@@ -170,62 +196,105 @@ export function AppHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Sheet>
+          {/* Mobile Sidebar */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden h-9 w-9 p-0"
+                aria-label="Open menu"
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 px-0">
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
-              <div className="flex h-full flex-col">
-                {/* Navigation */}
-                <nav className="flex-1 space-y-1 px-3 py-6">
-                  <NavLinks mobile onClick={() => {}} />
-                </nav>
+            <SheetContent
+              side="right"
+              showCloseButton={false}
+              className="w-full sm:w-80 gap-0 px-0 pb-0 pt-0"
+            >
+              {/* Custom Close Button - Top Left, safely positioned */}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="absolute top-4 left-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 hover:bg-muted transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-                {/* User section */}
-                <div className="border-t px-6 py-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Theme</span>
-                    <ThemeToggle />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="text-sm font-medium">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{displayName}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {isGuest ? "Guest mode" : session?.user?.email}
-                      </p>
-                    </div>
-                  </div>
+              {/* Header Section with Logo */}
+              <div className="flex flex-col border-b px-6 pt-14 pb-6 bg-muted/30">
+                <div className="flex items-center gap-3 mb-2">
+                  <Logo href="/dashboard" />
+                </div>
+                <p className="text-sm text-muted-foreground">Navigate your bills</p>
+              </div>
 
-                  {/* Action buttons */}
-                  <div className="mt-4 space-y-2">
-                    {isGuest ? (
-                      <>
-                        <Button variant="outline" size="sm" className="w-full justify-start" asChild>
-                          <Link href="/signup" className="flex items-center gap-2">
-                            <UserPlus className="h-4 w-4" />
-                            Sign up
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={handleLeave}>
-                          <ArrowRightLeft className="h-4 w-4" />
-                          Exit guest mode
-                        </Button>
-                      </>
-                    ) : (
-                      <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={handleLeave}>
-                        <LogOut className="h-4 w-4" />
-                        Sign out
+              {/* Navigation Items */}
+              <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+                <NavLinks mobile onClick={handleNavClick} />
+              </nav>
+
+              {/* Bottom User Section */}
+              <div className="border-t bg-muted/20 px-4 py-5 space-y-5">
+                {/* Theme Toggle Row */}
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-sm font-medium">Appearance</span>
+                  <ThemeToggle />
+                </div>
+
+                {/* User Profile Card */}
+                <div className="flex items-center gap-3 rounded-xl bg-background p-3 border shadow-sm">
+                  <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+                    <AvatarFallback className="text-sm font-semibold bg-primary text-primary-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{displayName}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {isGuest ? "Guest mode" : session?.user?.email}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2 pt-1">
+                  {isGuest ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="default"
+                        className="w-full justify-start gap-2 h-11 font-medium"
+                        asChild
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Link href="/signup" className="flex items-center gap-2">
+                          <UserPlus className="h-4 w-4" />
+                          Create account
+                        </Link>
                       </Button>
-                    )}
-                  </div>
+                      <Button
+                        variant="ghost"
+                        size="default"
+                        className="w-full justify-start gap-2 h-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-medium"
+                        onClick={handleLeave}
+                      >
+                        <ArrowRightLeft className="h-4 w-4" />
+                        Exit guest mode
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="default"
+                      className="w-full justify-start gap-2 h-11 text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-medium"
+                      onClick={handleLeave}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign out
+                    </Button>
+                  )}
                 </div>
               </div>
             </SheetContent>
