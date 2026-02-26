@@ -18,6 +18,7 @@ import {
   ScrollText,
 } from "lucide-react"
 import { trackCTAClick } from "@/lib/analytics"
+import { config } from "@/lib/config"
 
 // Lazy load FAQ accordion - it's below the fold and not critical for initial render
 const FaqAccordion = dynamic(() => import("@/components/faq-accordion").then(mod => ({ default: mod.FaqAccordion })), {
@@ -76,7 +77,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <h2 className="text-center text-3xl font-bold">Everything you need to split bills</h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
-              No more spreadsheets or arguments. SplitWatt handles the math so you can focus on living.
+              No more spreadsheets or arguments. {config.app.name} handles the math so you can focus on living.
             </p>
 
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

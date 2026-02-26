@@ -6,11 +6,13 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import { FileText, UserCheck, AlertTriangle, Scale, Gift, Code, Mail, Ban, Shield } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
+import { config } from "@/lib/config"
+
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "SplitWatt terms of service - Free and open source electricity bill splitter.",
+  description: `${config.app.name} terms of service - Free and open source electricity bill splitter.`,
   alternates: {
-    canonical: "https://electricity-bill-split.vercel.app/terms",
+    canonical: `${config.app.url}/terms`,
   },
 }
 
@@ -18,17 +20,17 @@ const sections = [
   {
     icon: Shield,
     title: "Agreement to Terms",
-    content: "By accessing or using SplitWatt, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.",
+    content: `By accessing or using ${config.app.name}, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.`,
   },
   {
     icon: FileText,
     title: "About SplitWatt",
-    content: "SplitWatt is a free and open source tool for splitting electricity bills among roommates. The service is provided \"as is\" without any warranties.",
+    content: `${config.app.name} is a free and open source tool for splitting electricity bills among roommates. The service is provided "as is" without any warranties.`,
   },
   {
     icon: UserCheck,
     title: "Eligibility",
-    content: "You must be at least 13 years old to use this service. By using SplitWatt, you represent that you are of legal age to form a binding contract.",
+    content: `You must be at least 13 years old to use this service. By using ${config.app.name}, you represent that you are of legal age to form a binding contract.`,
   },
 ]
 
@@ -143,7 +145,7 @@ export default function TermsPage() {
                 Data and Calculations Disclaimer
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                SplitWatt provides bill splitting calculations based on the data you input. While we strive for accuracy,
+                {config.app.name} provides bill splitting calculations based on the data you input. While we strive for accuracy,
                 we make no guarantees about the correctness of calculations. Always verify results before making payments.
               </p>
             </CardContent>
@@ -153,7 +155,7 @@ export default function TermsPage() {
           <Card className="mb-8">
             <CardContent className="p-6">
               <h3 className="font-semibold mb-4">Disclaimer of Warranties</h3>
-              <p className="text-sm text-muted-foreground mb-3">SplitWatt is provided \"as is\" without warranties. We do not guarantee:</p>
+              <p className="text-sm text-muted-foreground mb-3">{config.app.name} is provided "as is" without warranties. We do not guarantee:</p>
               <div className="grid sm:grid-cols-2 gap-2">
                 {disclaimers.map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm p-2 rounded-lg bg-muted/30">
@@ -170,8 +172,8 @@ export default function TermsPage() {
             <CardContent className="p-6">
               <h3 className="font-semibold mb-3">Intellectual Property</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                SplitWatt is open source software licensed under the MIT License. You may view, modify, and distribute the code.
-                The SplitWatt name and logo are trademarks and may not be used without permission.
+                {config.app.name} is open source software licensed under the MIT License. You may view, modify, and distribute the code.
+                The {config.app.name} name and logo are trademarks and may not be used without permission.
               </p>
             </CardContent>
           </Card>
@@ -184,7 +186,7 @@ export default function TermsPage() {
                 Limitation of Liability
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                To the fullest extent permitted by law, SplitWatt and its contributors shall not be liable for any indirect,
+                To the fullest extent permitted by law, {config.app.name} and its contributors shall not be liable for any indirect,
                 incidental, special, or consequential damages resulting from your use of the service.
               </p>
             </CardContent>
@@ -217,7 +219,7 @@ export default function TermsPage() {
               <Gift className="h-8 w-8 text-primary mx-auto mb-3" />
               <h3 className="font-semibold mb-2">Free & Open Source Forever</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                SplitWatt is and will remain free to use. Our code is transparent, auditable, and community-driven.
+                {config.app.name} is and will remain free to use. Our code is transparent, auditable, and community-driven.
               </p>
             </CardContent>
           </Card>
@@ -226,8 +228,8 @@ export default function TermsPage() {
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
               For questions about these terms, contact us at{" "}
-              <a href="mailto:hello@splitwatt.app" className="text-primary hover:underline font-medium">
-                hello@splitwatt.app
+              <a href={`mailto:${config.social.email}`} className="text-primary hover:underline font-medium">
+                {config.social.email}
               </a>
             </p>
           </div>

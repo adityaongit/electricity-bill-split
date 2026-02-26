@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
+import { config } from "@/lib/config"
 
 interface DashboardData {
   flat: { _id: string; name: string } | null
@@ -72,7 +73,7 @@ export default function DashboardPage() {
   if (!data?.flat) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h2 className="text-2xl font-bold">Welcome to SplitWatt!</h2>
+        <h2 className="text-2xl font-bold">Welcome to {config.app.name}!</h2>
         <p className="mt-2 text-muted-foreground">
           Get started by creating your flat and adding roommates.
         </p>

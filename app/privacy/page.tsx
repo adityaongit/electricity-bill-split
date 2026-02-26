@@ -6,11 +6,13 @@ import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 import { Shield, Lock, Eye, Database, User, Cookie, AlertCircle, Mail, Code } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
+import { config } from "@/lib/config"
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "SplitWatt privacy policy - We respect your privacy and don't sell your data.",
+  description: `${config.app.name} privacy policy - We respect your privacy and don't sell your data.`,
   alternates: {
-    canonical: "https://electricity-bill-split.vercel.app/privacy",
+    canonical: `${config.app.url}/privacy`,
   },
 }
 
@@ -18,7 +20,7 @@ const sections = [
   {
     icon: Shield,
     title: "Our Commitment",
-    content: "SplitWatt is a free and open source tool. We believe in privacy by design. We do not sell your data to third parties, and we never will.",
+    content: `${config.app.name} is a free and open source tool. We believe in privacy by design. We do not sell your data to third parties, and we never will.`,
   },
   {
     icon: User,
@@ -164,7 +166,7 @@ export default function PrivacyPage() {
               <Code className="h-8 w-8 text-primary mx-auto mb-3" />
               <h3 className="font-semibold mb-2">Open Source & Transparent</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                SplitWatt is open source. Our code is publicly available for review — anyone can verify how we handle data.
+                {config.app.name} is open source. Our code is publicly available for review — anyone can verify how we handle data.
               </p>
             </CardContent>
           </Card>
@@ -173,8 +175,8 @@ export default function PrivacyPage() {
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
               Questions? Contact us at{" "}
-              <a href="mailto:hello@splitwatt.app" className="text-primary hover:underline font-medium">
-                hello@splitwatt.app
+              <a href={`mailto:${config.social.email}`} className="text-primary hover:underline font-medium">
+                {config.social.email}
               </a>
             </p>
           </div>
