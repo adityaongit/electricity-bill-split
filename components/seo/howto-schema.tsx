@@ -1,5 +1,7 @@
+import { config } from "@/lib/config"
+
 export function HowToSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://electricity-bill-split.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? config.app.url
 
   const schema = {
     "@context": "https://schema.org",

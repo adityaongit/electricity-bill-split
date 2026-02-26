@@ -1,4 +1,4 @@
-const baseUrl = "https://electricity-bill-split.vercel.app"
+import { config } from "@/lib/config"
 
 interface BreadcrumbItem {
   name: string
@@ -6,6 +6,8 @@ interface BreadcrumbItem {
 }
 
 export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? config.app.url
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

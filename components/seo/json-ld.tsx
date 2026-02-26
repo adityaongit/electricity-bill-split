@@ -1,5 +1,7 @@
+import { config } from "@/lib/config"
+
 export function JsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://electricity-bill-split.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? config.app.url
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -8,7 +10,7 @@ export function JsonLd() {
       {
         "@type": "WebApplication",
         "@id": `${baseUrl}#webapp`,
-        name: "SplitWatt - Electricity Bill Splitter",
+        name: `${config.app.name} - Electricity Bill Splitter`,
         alternateName: ["Electricity Bill Splitter", "Electric Bill Split Calculator"],
         description:
           "Split electricity bills fairly among roommates with submeter readings. Track usage by area, handle common costs, and export bills as PDF or images. Free tool for flatmates and shared accommodations.",
@@ -38,7 +40,7 @@ export function JsonLd() {
         softwareVersion: "2.0",
         author: {
           "@type": "Organization",
-          name: "SplitWatt",
+          name: config.app.author,
         },
         keywords:
           "electricity bill splitter, electric bill split, roommate bill split, submeter calculator, flatmate bill sharing, common area electricity split",
@@ -48,7 +50,7 @@ export function JsonLd() {
       {
         "@type": "Organization",
         "@id": `${baseUrl}#organization`,
-        name: "SplitWatt",
+        name: config.app.author,
         url: baseUrl,
         logo: `${baseUrl}/logo.png`,
         description:
@@ -66,7 +68,7 @@ export function JsonLd() {
         "@type": "WebSite",
         "@id": `${baseUrl}#website`,
         url: baseUrl,
-        name: "SplitWatt",
+        name: config.app.author,
         description: "Free electricity bill splitter for roommates",
         publisher: {
           "@id": `${baseUrl}#organization`,

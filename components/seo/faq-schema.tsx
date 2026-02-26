@@ -1,3 +1,5 @@
+import { config } from "@/lib/config"
+
 // UI FAQs with formatted answers for display
 const faqs = [
   {
@@ -45,8 +47,8 @@ Final Amount = (Person's Units × Rate) + (Person's Common Share × Common Rate)
       "Electricity bill per person is calculated by: 1) Finding each person's consumed units from their submeter (current - previous reading), 2) Calculating their share of common units based on days stayed, 3) Converting total units to amount using the bill's unit rate, 4) Allocating common area costs proportionally. The final amount = (person's units × rate) + (person's common share × common rate).",
   },
   {
-    question: "Is SplitWatt free to use?",
-    answer: `Yes, SplitWatt is completely free for personal bill splitting.
+    question: `Is ${config.app.name} free to use?`,
+    answer: `Yes, ${config.app.name} is completely free for personal bill splitting.
 
 • Create an account to save your flats and bill history
 • Or use guest mode without signing up
@@ -55,17 +57,17 @@ Final Amount = (Person's Units × Rate) + (Person's Common Share × Common Rate)
 
 All features are free — no credit card required.`,
     plainAnswer:
-      "Yes, SplitWatt is completely free to use for personal bill splitting. You can create an account to save your flats and bill history, or use guest mode without signing up. Export bills as PDF or images and share with roommates on WhatsApp - all free.",
+      `Yes, ${config.app.name} is completely free to use for personal bill splitting. You can create an account to save your flats and bill history, or use guest mode without signing up. Export bills as PDF or images and share with roommates on WhatsApp - all free.`,
   },
   {
     question: "What if a roommate was absent for some days?",
-    answer: `SplitWatt handles partial occupancy perfectly.
+    answer: `${config.app.name} handles partial occupancy perfectly.
 
 Simply enter the number of days each person actually stayed in the flat. Their share of common area costs adjusts automatically.
 
 Example: Someone staying 15 days pays half the common costs of someone staying 30 days, but pays full for their personal room consumption.`,
     plainAnswer:
-      "SplitWatt handles partial occupancy perfectly. When adding roommates, simply enter the number of days each person actually stayed in the flat. The calculator automatically adjusts their share of common area costs proportionally. For example, someone staying 15 days pays half the common costs of someone staying 30 days, but pays full for their personal room consumption.",
+      `${config.app.name} handles partial occupancy perfectly. When adding roommates, simply enter the number of days each person actually stayed in the flat. The calculator automatically adjusts their share of common area costs proportionally. For example, someone staying 15 days pays half the common costs of someone staying 30 days, but pays full for their personal room consumption.`,
   },
   {
     question: "What is the formula for splitting electricity bills?",
@@ -89,9 +91,9 @@ Final Amount = (Personal Units × Unit Rate) + (Person's Common Share × Common 
 • Common areas (corridor, kitchen, living room) distributed among all occupants
 • Based on days stayed per person
 
-PG operators can use SplitWatt to generate individual bills for each room/bed instantly.`,
+PG operators can use ${config.app.name} to generate individual bills for each room/bed instantly.`,
     plainAnswer:
-      "For paying guests (PG), use the same submeter-based approach. Track each room's consumption separately via submeters. Common areas like corridor, kitchen, and living room usage is distributed among all occupants based on days stayed. PG operators can use SplitWatt to generate individual bills for each room/bed instantly.",
+      `For paying guests (PG), use the same submeter-based approach. Track each room's consumption separately via submeters. Common areas like corridor, kitchen, and living room usage is distributed among all occupants based on days stayed. PG operators can use ${config.app.name} to generate individual bills for each room/bed instantly.`,
   },
 ]
 
