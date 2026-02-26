@@ -4,6 +4,7 @@ import Script from "next/script"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { JsonLd } from "@/components/seo/json-ld"
+import { config } from "@/lib/config"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,10 +19,10 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://electricity-bill-split.vercel.app"),
+  metadataBase: new URL(config.app.url),
   title: {
-    default: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - SplitWatt",
-    template: "%s | SplitWatt - Electricity Bill Splitter",
+    default: `Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - ${config.app.name}`,
+    template: `%s | ${config.app.name} - Electricity Bill Splitter`,
   },
   description:
     "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
@@ -32,9 +33,9 @@ export const metadata: Metadata = {
     "submeter readings calculator",
     "flatmates bill split",
   ],
-  authors: [{ name: "SplitWatt" }],
-  creator: "SplitWatt",
-  publisher: "SplitWatt",
+  authors: [{ name: config.app.author }],
+  creator: config.app.author,
+  publisher: config.app.author,
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -44,8 +45,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://electricity-bill-split.vercel.app",
-    siteName: "SplitWatt - Electricity Bill Splitter",
+    url: config.app.url,
+    siteName: `${config.app.name} - Electricity Bill Splitter`,
     title: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly",
     description:
       "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
@@ -54,13 +55,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SplitWatt - Electricity Bill Splitter",
+        alt: `${config.app.name} - Electricity Bill Splitter`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - SplitWatt",
+    title: `Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - ${config.app.name}`,
     description: "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
     images: ["/twitter-og.png"],
   },
@@ -76,10 +77,10 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "raoATIK68dRpqbuNs0ZX2Z9FLbtb0B06EK8rBhykNng",
+    google: config.analytics.googleVerification,
   },
   alternates: {
-    canonical: "https://electricity-bill-split.vercel.app",
+    canonical: config.app.url,
   },
 }
 
@@ -100,7 +101,7 @@ export default function RootLayout({
         <Script
           defer
           src="https://cloud.umami.is/script.js"
-          data-website-id="d9d991ea-389d-402a-b258-371603776da2"
+          data-website-id={config.analytics.umamiWebsiteId}
           strategy="afterInteractive"
         />
       </head>

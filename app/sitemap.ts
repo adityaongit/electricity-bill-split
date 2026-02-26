@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next"
+import { config } from "@/lib/config"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://electricity-bill-split.vercel.app"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? config.app.url
   const now = new Date()
 
   return [
