@@ -1,4 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SplitWatt - Electricity Bill Splitter
+
+A free and open source electricity bill splitter for roommates. Calculate fair splits based on submeter readings.
+
+[![Live Demo](https://electricity-bill-split.vercel.app)](https://electricity-bill-split.vercel.app)
+
+## ⚠️ Important: Use the `next-app` Version
+
+This repository contains multiple branches:
+- **`next-app` (this branch)** - The modern, actively maintained Next.js App Router version ✅ **USE THIS**
+- `legacy-app` - Deprecated Next.js Pages Router version (no longer maintained)
+
+**Please use the `next-app` version** for the best experience, latest features, and ongoing support.
+
+## Features
+
+- 🧮 Calculate electricity bill splits based on submeter readings
+- 📊 Automatic distribution of common area costs
+- 📅 Handle partial occupancy with day-based calculations
+- 📤 Export bills as PDF or images
+- 📱 Share directly via WhatsApp
+- 💾 Save bills and history (requires account)
+- 👻 Guest mode - no signup required
 
 ## Getting Started
 
@@ -16,21 +38,19 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is a [Next.js](https://nextjs.org) project using the App Router.
 
-## Learn More
+- `app/` - Next.js App Router pages and layouts
+- `components/` - React components
+- `lib/` - Utility functions and business logic
+- `types/` - TypeScript type definitions
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License - see LICENSE file for details
