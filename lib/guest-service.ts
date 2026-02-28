@@ -238,3 +238,7 @@ export async function setCurrencyPreference(code: CurrencyCode): Promise<void> {
     updatedAt: new Date().toISOString(),
   })
 }
+
+export async function generateShareToken(billId: string): Promise<never> {
+  throw new Error("Please login with Google to use the share link feature")
+}
