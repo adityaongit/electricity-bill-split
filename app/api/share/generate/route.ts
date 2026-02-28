@@ -57,10 +57,13 @@ export async function POST(request: Request) {
       createdBy: session.user.id,
     })
 
+    const sharePath = `/share/${shareId}`
+    console.log("Share generated:", { billId, shareId, sharePath, expiresAt })
+
     trackShareLinkGenerated(billId, expirationDays)
 
     return jsonResponse({ 
-      shareUrl: `/share/${shareId}`,
+      shareUrl: sharePath,
       expiresAt 
     })
   } catch (error) {
