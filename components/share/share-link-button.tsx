@@ -43,12 +43,12 @@ export function ShareLinkButton({ billId, disabled }: ShareLinkButtonProps) {
 
       const data = await res.json()
 
-      if (data.error) {
+      if (!data.success) {
         setError(data.error)
         return
       }
 
-      const fullUrl = `${config.app.url}${data.shareUrl}`
+      const fullUrl = `${window.location.origin}${data.data.shareUrl}`
       setShareUrl(fullUrl)
       trackShareLinkGenerated(billId, parseInt(expirationDays))
     } catch {
@@ -95,7 +95,7 @@ export function ShareLinkButton({ billId, disabled }: ShareLinkButtonProps) {
 
         {shareUrl ? (
           <div className="space-y-4 py-4">
-            <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-green-400 bg-green-950/50 border border-green-800 p-3 rounded-lg">
               <CheckCircle2 className="h-5 w-5" />
               <p className="text-sm font-medium">Share link generated successfully!</p>
             </div>
