@@ -4,19 +4,35 @@ import {
   Text,
   View,
   StyleSheet,
+  Font,
 } from "@react-pdf/renderer"
 import { formatCurrency } from "@/lib/utils"
 import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/currency"
 import { config } from "@/lib/config"
 
+Font.register({
+  family: "NotoSans",
+  fonts: [
+    {
+      src: "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5/files/noto-sans-all-400-normal.woff2",
+      fontWeight: "normal",
+    },
+    {
+      src: "https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5/files/noto-sans-all-700-normal.woff2",
+      fontWeight: "bold",
+    },
+  ],
+})
+
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: "Helvetica" },
-  title: { fontSize: 18, marginBottom: 4, fontFamily: "Helvetica-Bold" },
+  page: { padding: 40, fontSize: 10, fontFamily: "NotoSans" },
+  title: { fontSize: 18, marginBottom: 4, fontFamily: "NotoSans", fontWeight: "bold" },
   subtitle: { fontSize: 10, color: "#666", marginBottom: 20 },
   section: { marginBottom: 16 },
   sectionTitle: {
     fontSize: 12,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "NotoSans",
+    fontWeight: "bold",
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
@@ -28,12 +44,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   label: { color: "#555" },
-  value: { fontFamily: "Helvetica-Bold" },
+  value: { fontFamily: "NotoSans", fontWeight: "bold" },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: "#f5f5f5",
     padding: 6,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "NotoSans",
+    fontWeight: "bold",
     fontSize: 9,
   },
   tableRow: {
@@ -49,7 +66,7 @@ const styles = StyleSheet.create({
   col4: { width: "14%", textAlign: "right" },
   col5: { width: "16%", textAlign: "right" },
   col6: { width: "14%", textAlign: "right" },
-  col7: { width: "14%", textAlign: "right", fontFamily: "Helvetica-Bold" },
+  col7: { width: "14%", textAlign: "right", fontFamily: "NotoSans", fontWeight: "bold" },
   footer: { position: "absolute", bottom: 30, left: 40, fontSize: 8, color: "#999" },
 })
 

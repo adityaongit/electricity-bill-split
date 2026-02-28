@@ -17,6 +17,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "html-to-image": "^1.11.13",
+    "html2canvas": "^1.4.1",
     "idb": "^8.0.3",
     "lucide-react": "^0.575.0",
     "mongodb": "^7.1.0",

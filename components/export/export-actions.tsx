@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { toPng } from "html-to-image"
+import html2canvas from "html2canvas"
 import { Button } from "@/components/ui/button"
 import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { useDataService } from "@/lib/guest-context"
@@ -75,9 +75,14 @@ export function ExportActions({
 
       document.body.appendChild(clone)
 
-      const dataUrl = await toPng(clone, { pixelRatio: 2, backgroundColor: "#fff" })
+      const canvas = await html2canvas(clone, {
+        backgroundColor: "#fff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      })
       const a = document.createElement("a")
-      a.href = dataUrl
+      a.href = canvas.toDataURL("image/png")
       a.download = generateBillFilename(bill.billingPeriod.from, bill.billingPeriod.to, "png")
       a.click()
 
