@@ -72,7 +72,7 @@ export function ShareLinkButton({ billId, disabled }: ShareLinkButtonProps) {
 
   const expirationOptions = [
     { value: "1", label: "1 day" },
-    { value: "7", label: "7 days (recommended)" },
+    { value: "7", label: "7 days" },
     { value: "30", label: "30 days" },
     { value: "90", label: "90 days" },
   ]

@@ -13,8 +13,10 @@ interface SharePageProps {
 
 export default async function SharePage({ params }: SharePageProps) {
   const { shareId } = await params
+  
+  const appUrl = config.app.url || ""
 
-  const res = await fetch(`${config.app.url}/api/share/${shareId}`, {
+  const res = await fetch(`${appUrl}/api/share/${shareId}`, {
     next: { revalidate: 0 },
   })
 
