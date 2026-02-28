@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react"
 import Link from "next/link"
-import { MessageCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -20,8 +19,7 @@ import { ExportActions } from "@/components/export/export-actions"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
-import { getIndividualWhatsAppUrl } from "@/lib/whatsapp"
-import type { BillDetailData, RoommateData, FlatData } from "@/lib/data-service"
+import type { BillDetailData, FlatData } from "@/lib/data-service"
 import { trackBillView } from "@/lib/analytics"
 
 export default function BillDetailPage({
@@ -34,7 +32,6 @@ export default function BillDetailPage({
   const { currency } = useCurrency()
   const [bill, setBill] = useState<BillDetailData | null>(null)
   const [flat, setFlat] = useState<FlatData | null>(null)
-  const [roommates, setRoommates] = useState<RoommateData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -43,22 +40,13 @@ export default function BillDetailPage({
       setBill(billData)
       if (billData) {
         trackBillView(billId)
-        const [mates, flatData] = await Promise.all([
-          service.getRoommates(billData.flatId),
-          service.getFlats().then(flats => flats.find(f => f._id === billData.flatId) || null)
-        ])
-        setRoommates(mates)
+        const flatData = await service.getFlats().then(flats => flats.find(f => f._id === billData.flatId) || null)
         setFlat(flatData)
       }
       setLoading(false)
     }
     loadData()
   }, [billId, service])
-
-  const getRoommatePhone = (name: string) => {
-    const roommate = roommates.find((r) => r.name === name)
-    return roommate?.phone
-  }
 
   const getAreaLabel = (slug: string) => flat?.areas.find((a) => a.slug === slug)?.label || slug
 
@@ -225,67 +213,38 @@ export default function BillDetailPage({
         <CardContent>
           {/* Mobile view - Card layout */}
           <div className="space-y-4 md:hidden">
-            {bill.splits.map((s, i) => {
-              const phone = getRoommatePhone(s.roommateName)
-              return (
-                <div key={i} className="rounded-lg border p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-base">{s.roommateName}</p>
-                      <p className="text-sm text-muted-foreground">{getAreaLabel(s.area)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xl font-bold">{formatCurrency(s.totalAmount, currency)}</p>
-                    </div>
+            {bill.splits.map((s, i) => (
+              <div key={i} className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-base">{s.roommateName}</p>
+                    <p className="text-sm text-muted-foreground">{getAreaLabel(s.area)}</p>
                   </div>
-                  <Separator />
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Days</p>
-                      <p className="font-medium">{s.daysStayed}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Area Share</p>
-                      <p className="font-medium">{s.areaSharePercent}%</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Area Cost</p>
-                      <p className="font-medium">{formatCurrency(s.areaCost, currency)}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Common</p>
-                      <p className="font-medium">{formatCurrency(s.commonCost, currency)}</p>
-                    </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold">{formatCurrency(s.totalAmount, currency)}</p>
                   </div>
-                  {phone ? (
-                    <Button
-                      variant="outline"
-                      className="w-full text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950"
-                      onClick={() => {
-                        const url = getIndividualWhatsAppUrl(
-                          bill,
-                          phone,
-                          flat?.upiId,
-                          flat?.upiPayeeName,
-                          currency
-                        )
-                        window.open(url, "_blank")
-                      }}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      Share on WhatsApp
-                    </Button>
-                  ) : (
-                    <a href="/roommates" className="block">
-                      <Button variant="outline" className="w-full" size="sm">
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        Add phone number to share
-                      </Button>
-                    </a>
-                  )}
                 </div>
-              )
-            })}
+                <Separator />
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Days</p>
+                    <p className="font-medium">{s.daysStayed}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Area Share</p>
+                    <p className="font-medium">{s.areaSharePercent}%</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Area Cost</p>
+                    <p className="font-medium">{formatCurrency(s.areaCost, currency)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Common</p>
+                    <p className="font-medium">{formatCurrency(s.commonCost, currency)}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Desktop view - Table layout */}
@@ -300,51 +259,22 @@ export default function BillDetailPage({
                   <TableHead className="text-right">Area Cost</TableHead>
                   <TableHead className="text-right">Common</TableHead>
                   <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right w-[140px]">WhatsApp</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bill.splits.map((s, i) => {
-                  const phone = getRoommatePhone(s.roommateName)
-                  return (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">{s.roommateName}</TableCell>
-                      <TableCell>{getAreaLabel(s.area)}</TableCell>
-                      <TableCell className="text-right">{s.daysStayed}</TableCell>
-                      <TableCell className="text-right">{s.areaSharePercent}%</TableCell>
-                      <TableCell className="text-right">{formatCurrency(s.areaCost, currency)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(s.commonCost, currency)}</TableCell>
-                      <TableCell className="text-right font-bold">
-                        {formatCurrency(s.totalAmount, currency)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {phone ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950"
-                            onClick={() => {
-                              const url = getIndividualWhatsAppUrl(
-                                bill,
-                                phone,
-                                flat?.upiId,
-                                flat?.upiPayeeName
-                              )
-                              window.open(url, "_blank")
-                            }}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            Share
-                          </Button>
-                        ) : (
-                          <a href="/roommates" className="text-xs text-muted-foreground hover:underline">
-                            Add phone
-                          </a>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {bill.splits.map((s, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{s.roommateName}</TableCell>
+                    <TableCell>{getAreaLabel(s.area)}</TableCell>
+                    <TableCell className="text-right">{s.daysStayed}</TableCell>
+                    <TableCell className="text-right">{s.areaSharePercent}%</TableCell>
+                    <TableCell className="text-right">{formatCurrency(s.areaCost, currency)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(s.commonCost, currency)}</TableCell>
+                    <TableCell className="text-right font-bold">
+                      {formatCurrency(s.totalAmount, currency)}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
