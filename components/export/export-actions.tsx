@@ -22,9 +22,10 @@ interface ExportActionsProps {
   billId: string
   bill: BillDetailData
   flat: FlatData | null
+  hideShareLink?: boolean
 }
 
-export function ExportActions({ billId, bill, flat }: ExportActionsProps) {
+export function ExportActions({ billId, bill, flat, hideShareLink }: ExportActionsProps) {
   const { service } = useDataService()
   const { currency } = useCurrency()
   const [exporting, setExporting] = useState<string | null>(null)
@@ -131,7 +132,7 @@ export function ExportActions({ billId, bill, flat }: ExportActionsProps) {
       >
         {exporting === "whatsapp" ? "Preparing..." : "Share on WhatsApp"}
       </Button>
-      {bill.status === "finalized" && <ShareLinkButton billId={billId} />}
+      {!hideShareLink && bill.status === "finalized" && <ShareLinkButton billId={billId} />}
     </div>
   )
 }
