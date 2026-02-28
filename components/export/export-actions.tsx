@@ -16,6 +16,7 @@ import {
   trackExportImageFailed,
   trackShareWhatsApp,
 } from "@/lib/analytics"
+import { ShareLinkButton } from "@/components/share/share-link-button"
 
 interface ExportActionsProps {
   billId: string
@@ -130,6 +131,7 @@ export function ExportActions({ billId, bill, flat }: ExportActionsProps) {
       >
         {exporting === "whatsapp" ? "Preparing..." : "Share on WhatsApp"}
       </Button>
+      {bill.status === "finalized" && <ShareLinkButton billId={billId} />}
     </div>
   )
 }
