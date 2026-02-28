@@ -4,6 +4,24 @@ import { getSessionOrUnauthorized, jsonResponse, errorResponse } from "@/lib/api
 
 export const dynamic = "force-dynamic"
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ billId: string }> }
+) {
+  const { error } = await getSessionOrUnauthorized()
+  if (error) return error
+
+  const { billId } = await params
+  const db = getDb()
+
+  const bill = await db.collection("bills").findOne({ _id: new ObjectId(billId) })
+  if (!bill) return errorResponse("Bill not found", 404)
+
+  const splits = await db.collection("bill_splits").find({ billId: new ObjectId(billId) }).toArray()
+
+  return jsonResponse({ ...bill, splits })
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ billId: string }> }
