@@ -84,21 +84,15 @@ export function ExportActions({ billId, bill, flat }: ExportActionsProps) {
       if (isMobile && navigator.canShare?.({ files: [file] })) {
         // Mobile: native share sheet — WhatsApp appears with image attached
         await navigator.share({ files: [file], text: caption })
-      } else if (navigator.clipboard?.write) {
-        // Desktop: copy image to clipboard + open WhatsApp web
-        // User pastes with ⌘V / Ctrl+V directly in the chat
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
-        window.open(`https://wa.me/?text=${encodeURIComponent(caption)}`, "_blank")
-        toast.success("Image copied — paste it in WhatsApp (⌘V / Ctrl+V)")
       } else {
-        // Fallback: just download
+        // Desktop: just download the image
         const objUrl = URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = objUrl
         a.download = filename
         a.click()
         URL.revokeObjectURL(objUrl)
-        toast.info("Image downloaded — attach it in WhatsApp")
+        toast.success("Image downloaded")
       }
 
       trackShareWhatsApp(billId, "group")
