@@ -9,12 +9,13 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrency(amount: number, currencyCode?: CurrencyCode): string {
   const currency = currencyCode ?? DEFAULT_CURRENCY
   const config = getCurrencyConfig(currency)
-  return new Intl.NumberFormat(config.locale, {
+  const formatted = new Intl.NumberFormat(config.locale, {
     style: "currency",
     currency: config.code,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount)
+  return amount % 1 === 0 ? formatted.replace(/\.00$/, "") : formatted
 }
 
 export function formatDate(date: Date | string): string {
