@@ -183,6 +183,22 @@ export function trackCTAClick(location: "hero" | "bottom"): void {
 }
 
 // =====================
+// Share Events
+// =====================
+
+export function trackShareLinkGenerated(billId: string, expirationDays: number): void {
+  track("share_link_generated", { bill_id: billId, expiration_days: expirationDays })
+}
+
+export function trackShareLinkViewed(shareId: string): void {
+  track("share_link_viewed", { share_id: shareId })
+}
+
+export function trackShareLinkRevoked(shareId: string): void {
+  track("share_link_revoked", { share_id: shareId })
+}
+
+// =====================
 // PWA Events
 // =====================
 

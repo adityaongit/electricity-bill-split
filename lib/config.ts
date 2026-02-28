@@ -16,4 +16,9 @@ export const config = {
     googleVerification: "raoATIK68dRpqbuNs0ZX2Z9FLbtb0B06EK8rBhykNng",
     umamiWebsiteId: "d9d991ea-389d-402a-b258-371603776da2",
   },
+  share: {
+    defaultExpirationDays: 7,
+    maxExpirationDays: 365,
+    minExpirationDays: 1,
+  },
 } as const
