@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import html2canvas from "html2canvas"
+import { toPng } from "html-to-image"
 import { Button } from "@/components/ui/button"
 import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { useDataService } from "@/lib/guest-context"
@@ -20,14 +20,9 @@ import {
 interface ExportActionsProps {
   billId: string
   bill: BillDetailData
-  imageTargetId?: string
 }
 
-export function ExportActions({
-  billId,
-  bill,
-  imageTargetId = "bill-detail",
-}: ExportActionsProps) {
+export function ExportActions({ billId, bill }: ExportActionsProps) {
   const { service } = useDataService()
   const { currency } = useCurrency()
   const [exporting, setExporting] = useState<string | null>(null)
@@ -55,39 +50,14 @@ export function ExportActions({
   async function handleImageDownload() {
     setExporting("image")
     try {
-      const node = document.getElementById(imageTargetId)
-      if (!node) throw new Error("Target element not found")
+      const node = document.getElementById("bill-snapshot")
+      if (!node) throw new Error("Snapshot element not found")
 
-      // Create a clean clone of the element for consistent screenshot
-      const clone = node.cloneNode(true) as HTMLElement
-      clone.style.display = "block"
-      clone.style.position = "absolute"
-      clone.style.left = "-9999px"
-      clone.style.background = "#fff"
-      clone.style.padding = "20px"
-      clone.style.width = "780px" // Fixed width for consistency
-
-      // Remove export buttons from the clone
-      const exportBtns = clone.querySelector("div.flex.flex-wrap.gap-2")
-      if (exportBtns) {
-        exportBtns.remove()
-      }
-
-      document.body.appendChild(clone)
-
-      const canvas = await html2canvas(clone, {
-        backgroundColor: "#fff",
-        scale: 2,
-        logging: false,
-        useCORS: true,
-      })
+      const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: "#fff" })
       const a = document.createElement("a")
-      a.href = canvas.toDataURL("image/png")
+      a.href = dataUrl
       a.download = generateBillFilename(bill.billingPeriod.from, bill.billingPeriod.to, "png")
       a.click()
-
-      // Clean up
-      document.body.removeChild(clone)
       trackExportImage(billId)
       toast.success("Image downloaded")
     } catch (err) {
