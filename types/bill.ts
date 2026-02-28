@@ -48,3 +48,13 @@ export interface BillSplit {
   totalAmount: number
   createdAt: Date
 }
+
+export interface ShareToken {
+  _id: ObjectId
+  billId: ObjectId
+  shareId: string
+  expiresAt: Date
+  viewCount: number
+  createdAt: Date
+  createdBy: string
+}
