@@ -57,6 +57,25 @@ export const createBillSchema = z.object({
   status: z.enum(["draft", "finalized"]).default("draft"),
 })
 
+export const updateBillSchema = z.object({
+  billingPeriod: z.object({
+    from: z.string().min(1),
+    to: z.string().min(1),
+  }),
+  totalBill: z.number().positive("Total bill must be positive"),
+  totalUnits: z.number().positive("Total units must be positive"),
+  submeterReadings: z.record(z.string(), submeterReadingSchema),
+  roommates: z.array(
+    z.object({
+      roommateId: z.string().min(1),
+      roommateName: z.string().min(1),
+      area: z.string().min(1),
+      daysStayed: z.number().min(0).max(31),
+    })
+  ),
+})
+
 export type CreateFlatInput = z.infer<typeof createFlatSchema>
 export type CreateRoommateInput = z.infer<typeof createRoommateSchema>
 export type CreateBillInput = z.infer<typeof createBillSchema>
+export type UpdateBillInput = z.infer<typeof updateBillSchema>

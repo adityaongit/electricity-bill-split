@@ -8,6 +8,7 @@ import type {
   BillListResult,
   BillDetailData,
   CreateBillInput,
+  UpdateBillInput,
 } from "./data-service"
 
 export function createGuestService(): DataService {
@@ -199,6 +200,53 @@ export function createGuestService(): DataService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const blob = await pdf(doc as any).toBlob()
       return blob
+    },
+
+    async updateBill(id: string, input: UpdateBillInput) {
+      const db = await openGuestDb()
+      const existing = await db.get("bills", id)
+      if (!existing) throw new Error("Bill not found")
+
+      const result = calculateBill({
+        totalBill: input.totalBill,
+        totalUnits: input.totalUnits,
+        submeterReadings: input.submeterReadings,
+        roommates: input.roommates,
+      })
+
+      const now = new Date().toISOString()
+      const updatedBill = {
+        ...existing,
+        billingPeriod: input.billingPeriod,
+        totalBill: input.totalBill,
+        totalUnits: input.totalUnits,
+        submeterReadings: input.submeterReadings,
+        computed: result.computed,
+        updatedAt: now,
+      }
+
+      const oldSplits = await db.getAllFromIndex("bill_splits", "billId", id)
+      const tx = db.transaction(["bills", "bill_splits"], "readwrite")
+      await tx.objectStore("bills").put(updatedBill)
+      for (const split of oldSplits) {
+        await tx.objectStore("bill_splits").delete(split._id)
+      }
+      for (const split of result.splits) {
+        await tx.objectStore("bill_splits").put({
+          _id: crypto.randomUUID(),
+          billId: id,
+          roommateId: split.roommateId,
+          roommateName: split.roommateName,
+          area: split.area,
+          daysStayed: split.daysStayed,
+          areaSharePercent: split.areaSharePercent,
+          areaCost: split.areaCost,
+          commonCost: split.commonCost,
+          totalAmount: split.totalAmount,
+          createdAt: now,
+        })
+      }
+      await tx.done
     },
 
     async deleteBill(id) {

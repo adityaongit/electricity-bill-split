@@ -290,6 +290,9 @@ export default function BillDetailPage({
         <Button variant="outline" asChild>
           <Link href="/bill/new">Create New Bill</Link>
         </Button>
+        <Button variant="outline" asChild>
+          <Link href={`/bill/${billId}/edit`}>Edit Bill</Link>
+        </Button>
       </div>
 
     </div>

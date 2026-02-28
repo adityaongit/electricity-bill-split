@@ -4,6 +4,7 @@ import type {
   RoommateData,
   BillListResult,
   BillDetailData,
+  UpdateBillInput,
 } from "./data-service"
 
 export function createApiService(): DataService {
@@ -100,6 +101,15 @@ export function createApiService(): DataService {
       const res = await fetch(url)
       if (!res.ok) throw new Error("Failed to generate PDF")
       return res.blob()
+    },
+
+    async updateBill(id: string, input: UpdateBillInput) {
+      const res = await fetch(`/api/bills/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      }).then((r) => r.json())
+      if (!res.success) throw new Error(res.error)
     },
 
     async deleteBill(id) {

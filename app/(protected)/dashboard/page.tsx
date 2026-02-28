@@ -8,6 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
+import { useSession } from "@/lib/auth-client"
+import { trackSignupSuccess } from "@/lib/analytics"
 import { config } from "@/lib/config"
 
 interface DashboardData {
@@ -27,8 +29,16 @@ interface DashboardData {
 export default function DashboardPage() {
   const { service } = useDataService()
   const { currency } = useCurrency()
+  const { data: session } = useSession()
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Track signup for Google OAuth users — fires only within 60s of account creation
+  useEffect(() => {
+    if (!session?.user?.createdAt) return
+    const isNewUser = Date.now() - new Date(session.user.createdAt).getTime() < 60_000
+    if (isNewUser) trackSignupSuccess("google")
+  }, [session?.user?.id])
 
   useEffect(() => {
     async function load() {

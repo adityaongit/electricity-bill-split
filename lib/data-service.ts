@@ -36,6 +36,7 @@ export interface BillData {
 
 export interface BillDetailData extends BillData {
   splits: {
+    roommateId?: string
     roommateName: string
     area: string
     daysStayed: number
@@ -76,6 +77,19 @@ export interface CreateBillInput {
   status: string
 }
 
+export interface UpdateBillInput {
+  billingPeriod: { from: string; to: string }
+  totalBill: number
+  totalUnits: number
+  submeterReadings: Record<string, { previous: number; current: number }>
+  roommates: {
+    roommateId: string
+    roommateName: string
+    area: string
+    daysStayed: number
+  }[]
+}
+
 export interface DataService {
   getFlats(): Promise<FlatData[]>
   createFlat(name: string, areas: AreaInput[]): Promise<FlatData>
@@ -90,6 +104,7 @@ export interface DataService {
   getBills(flatId: string, page?: number, limit?: number): Promise<BillListResult>
   getBill(billId: string): Promise<BillDetailData | null>
   createBill(input: CreateBillInput): Promise<{ _id: string }>
+  updateBill(id: string, input: UpdateBillInput): Promise<void>
   deleteBill(id: string): Promise<void>
 
   generatePdfBlob(billId: string, currency?: string): Promise<Blob>
