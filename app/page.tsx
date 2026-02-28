@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt"
 import { FaqSchema, faqs } from "@/components/seo/faq-schema"
 import { HowToSchema } from "@/components/seo/howto-schema"
 import dynamic from "next/dynamic"
@@ -237,6 +238,7 @@ export default function LandingPage() {
       </main>
 
       <Footer />
+      <PwaInstallPrompt />
     </div>
   )
 }
