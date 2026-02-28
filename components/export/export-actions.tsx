@@ -1,14 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { toPng } from "html-to-image"
 import { Button } from "@/components/ui/button"
 import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import { toast } from "sonner"
 import { generateBillFilename } from "@/lib/utils"
-import type { BillDetailData } from "@/lib/data-service"
+import { generateBillImageDataUrl } from "@/lib/generate-bill-image"
+import type { BillDetailData, FlatData } from "@/lib/data-service"
 import {
   trackExportPDF,
   trackExportPDFFailed,
@@ -20,9 +20,10 @@ import {
 interface ExportActionsProps {
   billId: string
   bill: BillDetailData
+  flat: FlatData | null
 }
 
-export function ExportActions({ billId, bill }: ExportActionsProps) {
+export function ExportActions({ billId, bill, flat }: ExportActionsProps) {
   const { service } = useDataService()
   const { currency } = useCurrency()
   const [exporting, setExporting] = useState<string | null>(null)
@@ -50,10 +51,7 @@ export function ExportActions({ billId, bill }: ExportActionsProps) {
   async function handleImageDownload() {
     setExporting("image")
     try {
-      const node = document.getElementById("bill-snapshot")
-      if (!node) throw new Error("Snapshot element not found")
-
-      const dataUrl = await toPng(node, { pixelRatio: 2, backgroundColor: "#fff" })
+      const dataUrl = await generateBillImageDataUrl(bill, flat, currency)
       const a = document.createElement("a")
       a.href = dataUrl
       a.download = generateBillFilename(bill.billingPeriod.from, bill.billingPeriod.to, "png")

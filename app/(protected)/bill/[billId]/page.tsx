@@ -17,7 +17,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { ExportActions } from "@/components/export/export-actions"
-import { BillSnapshotCard } from "@/components/export/bill-snapshot-card"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
@@ -112,7 +111,7 @@ export default function BillDetailPage({
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ExportActions billId={billId} bill={bill} />
+          <ExportActions billId={billId} bill={bill} flat={flat} />
         </div>
       </div>
 
@@ -363,14 +362,6 @@ export default function BillDetailPage({
         </Button>
       </div>
 
-      {/* Hidden element used for "Download Image" — inline styles only for consistent screenshots */}
-      <div
-        id="bill-snapshot"
-        aria-hidden="true"
-        style={{ position: "absolute", left: "-9999px", top: 0, pointerEvents: "none" }}
-      >
-        <BillSnapshotCard bill={bill} flat={flat} currency={currency} />
-      </div>
     </div>
   )
 }

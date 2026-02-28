@@ -1,0 +1,162 @@
+import { formatCurrency, formatDate } from "@/lib/utils"
+import { DEFAULT_CURRENCY, type CurrencyCode } from "@/lib/currency"
+import { config as appConfig } from "@/lib/config"
+import type { BillDetailData, FlatData } from "@/lib/data-service"
+
+const W = 780
+const PAD = 32
+const ROW_H = 34
+const FONT = "Arial, Helvetica, sans-serif"
+
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+function buildSvg(
+  bill: BillDetailData,
+  flat: FlatData | null,
+  currency: CurrencyCode
+): { svg: string; height: number } {
+  const getLabel = (slug: string) => flat?.areas.find((a) => a.slug === slug)?.label ?? slug
+  const fmt = (n: number) => esc(formatCurrency(n, currency))
+
+  const splits = bill.splits
+  const tableTop = 252
+  const tableBodyTop = tableTop + 36
+  const tableHeight = splits.length * ROW_H
+  const footerY = tableBodyTop + tableHeight + 36
+  const H = footerY + 28
+
+  // Summary cards
+  const summaryItems = [
+    { label: "Total Bill", value: fmt(bill.totalBill) },
+    { label: "Total Units", value: `${bill.totalUnits} units` },
+    { label: "Per Unit Price", value: fmt(bill.computed.perUnitPrice) },
+    { label: "Common Units", value: `${bill.computed.commonUnits} units` },
+  ]
+  const cardW = (W - PAD * 2 - 12 * 3) / 4
+  const summaryCards = summaryItems
+    .map((item, i) => {
+      const x = PAD + i * (cardW + 12)
+      return `
+      <rect x="${x}" y="100" width="${cardW}" height="68" rx="6" fill="#f5f5f5"/>
+      <text x="${x + cardW / 2}" y="124" font-family="${FONT}" font-size="11" fill="#777" text-anchor="middle">${esc(item.label)}</text>
+      <text x="${x + cardW / 2}" y="150" font-family="${FONT}" font-size="16" font-weight="bold" text-anchor="middle">${item.value}</text>
+    `
+    })
+    .join("")
+
+  // Table header columns
+  const cols = [
+    { label: "Name", x: PAD, w: 130, align: "start" },
+    { label: "Area", x: PAD + 130, w: 110, align: "start" },
+    { label: "Days", x: PAD + 240, w: 50, align: "end" },
+    { label: "Area Share", x: PAD + 290, w: 75, align: "end" },
+    { label: "Area Cost", x: PAD + 365, w: 100, align: "end" },
+    { label: "Common", x: PAD + 465, w: 100, align: "end" },
+    { label: "Total", x: PAD + 565, w: W - PAD - (PAD + 565), align: "end" },
+  ]
+
+  const tableHeaderCells = cols
+    .map((col) => {
+      const tx = col.align === "end" ? col.x + col.w : col.x
+      return `<text x="${tx}" y="${tableTop + 22}" font-family="${FONT}" font-size="11" font-weight="bold" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#333">${esc(col.label)}</text>`
+    })
+    .join("")
+
+  const tableRows = splits
+    .map((s, i) => {
+      const y = tableBodyTop + i * ROW_H
+      const rowBg = i % 2 === 0 ? "#fff" : "#fafafa"
+      const cellY = y + ROW_H - 10
+
+      const cells = [
+        { col: cols[0], val: esc(s.roommateName) },
+        { col: cols[1], val: esc(getLabel(s.area)) },
+        { col: cols[2], val: String(s.daysStayed) },
+        { col: cols[3], val: `${s.areaSharePercent}%` },
+        { col: cols[4], val: fmt(s.areaCost) },
+        { col: cols[5], val: fmt(s.commonCost) },
+        { col: cols[6], val: fmt(s.totalAmount) },
+      ]
+
+      const cellsSvg = cells
+        .map(({ col, val }, ci) => {
+          const tx = col.align === "end" ? col.x + col.w : col.x
+          const fw = ci === 6 ? "bold" : "normal"
+          return `<text x="${tx}" y="${cellY}" font-family="${FONT}" font-size="12" font-weight="${fw}" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#111">${val}</text>`
+        })
+        .join("")
+
+      return `
+      <rect x="${PAD}" y="${y}" width="${W - PAD * 2}" height="${ROW_H}" fill="${rowBg}"/>
+      <line x1="${PAD}" y1="${y + ROW_H}" x2="${W - PAD}" y2="${y + ROW_H}" stroke="#eee" stroke-width="1"/>
+      ${cellsSvg}
+    `
+    })
+    .join("")
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+    <rect width="${W}" height="${H}" fill="#fff"/>
+
+    <!-- Title -->
+    <text x="${PAD}" y="48" font-family="${FONT}" font-size="22" font-weight="bold" fill="#111">Electricity Bill Split</text>
+    <text x="${PAD}" y="72" font-family="${FONT}" font-size="13" fill="#666">${esc(formatDate(bill.billingPeriod.from))} \u2014 ${esc(formatDate(bill.billingPeriod.to))}</text>
+
+    <!-- Summary cards -->
+    ${summaryCards}
+
+    <!-- Section title -->
+    <text x="${PAD}" y="204" font-family="${FONT}" font-size="14" font-weight="bold" fill="#111">Individual Distribution</text>
+    <line x1="${PAD}" y1="212" x2="${W - PAD}" y2="212" stroke="#ddd" stroke-width="1"/>
+
+    <!-- Table header -->
+    <rect x="${PAD}" y="${tableTop}" width="${W - PAD * 2}" height="36" fill="#f5f5f5" rx="4"/>
+    ${tableHeaderCells}
+
+    <!-- Table rows -->
+    ${tableRows}
+
+    <!-- Footer -->
+    <text x="${W - PAD}" y="${footerY}" font-family="${FONT}" font-size="11" fill="#bbb" text-anchor="end">Generated by ${esc(appConfig.app.name)}</text>
+  </svg>`
+
+  return { svg, height: H }
+}
+
+export function generateBillImageDataUrl(
+  bill: BillDetailData,
+  flat: FlatData | null,
+  currency: CurrencyCode = DEFAULT_CURRENCY
+): Promise<string> {
+  const { svg, height } = buildSvg(bill, flat, currency)
+
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement("canvas")
+    canvas.width = W * 2
+    canvas.height = height * 2
+    const ctx = canvas.getContext("2d")!
+    ctx.scale(2, 2)
+    ctx.fillStyle = "#fff"
+    ctx.fillRect(0, 0, W, height)
+
+    const img = new Image()
+    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      resolve(canvas.toDataURL("image/png"))
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error("Failed to render bill image"))
+    }
+    img.src = url
+  })
+}
