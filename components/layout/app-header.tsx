@@ -79,9 +79,6 @@ function NavLinks({
                 )}
               />
               <span className="flex-1">{item.label}</span>
-              {isActive && (
-                <span className="absolute inset-0 rounded-xl ring-2 ring-primary/50 ring-offset-2 ring-offset-background" />
-              )}
             </Link>
           )
         }

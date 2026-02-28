@@ -1,6 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { Download } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { trackPwaInstall } from "@/lib/analytics"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,86 +20,92 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
 }
 
-const STORAGE_KEY = "pwa-install-dismissed"
-
-export function PwaInstallPrompt() {
-  const [open, setOpen] = useState(false)
+export function PwaInstallButton() {
+  const [isMobile, setIsMobile] = useState(false)
   const [isIos, setIsIos] = useState(false)
+  const [canInstallNatively, setCanInstallNatively] = useState(false)
+  const [open, setOpen] = useState(false)
   const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
-    // Don't show if already dismissed or installed
-    if (localStorage.getItem(STORAGE_KEY)) return
-
-    // Only on mobile
     const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
     if (!mobile) return
 
-    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-    setIsIos(ios)
+    setIsMobile(true)
+    setIsIos(/iPhone|iPad|iPod/i.test(navigator.userAgent))
 
-    // Register service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {})
     }
 
-    // Android/Chrome: capture the install event
+    // Pick up event captured before React mounted (see layout.tsx <head> script)
+    const w = window as typeof window & { __pwaPrompt?: BeforeInstallPromptEvent }
+    if (w.__pwaPrompt) {
+      deferredPrompt.current = w.__pwaPrompt
+      setCanInstallNatively(true)
+    }
+
     const handler = (e: Event) => {
       e.preventDefault()
       deferredPrompt.current = e as BeforeInstallPromptEvent
+      setCanInstallNatively(true)
+      ;(window as typeof w).__pwaPrompt = e as BeforeInstallPromptEvent
     }
     window.addEventListener("beforeinstallprompt", handler)
-
-    // Show dialog after 10 seconds
-    const timer = setTimeout(() => {
-      // For iOS always show (no beforeinstallprompt); for Android wait for event
-      if (ios || deferredPrompt.current) {
-        setOpen(true)
-      }
-    }, 10000)
-
-    return () => {
-      clearTimeout(timer)
-      window.removeEventListener("beforeinstallprompt", handler)
-    }
+    return () => window.removeEventListener("beforeinstallprompt", handler)
   }, [])
 
-  function handleDismiss() {
-    localStorage.setItem(STORAGE_KEY, "1")
-    setOpen(false)
-  }
-
   async function handleInstall() {
-    localStorage.setItem(STORAGE_KEY, "1")
-    setOpen(false)
     if (deferredPrompt.current) {
+      trackPwaInstall("native")
+      setOpen(false)
       await deferredPrompt.current.prompt()
       deferredPrompt.current = null
+      setCanInstallNatively(false)
     }
-    // iOS: nothing to do here — instructions shown in dialog body
   }
 
+  function handleGotIt() {
+    trackPwaInstall(isIos ? "manual_ios" : "manual_android")
+    setOpen(false)
+  }
+
+  function getDescription() {
+    if (isIos) {
+      return 'Tap the Share button (□↑) in Safari, then select "Add to Home Screen".'
+    }
+    if (canInstallNatively) {
+      return "Install SplitWatt on your home screen for quick access."
+    }
+    // Android but no native prompt — show manual instructions
+    return 'Tap the browser menu (⋮) in Chrome, then select "Add to Home Screen" or "Install app".'
+  }
+
+  if (!isMobile) return null
+
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Add SplitWatt to Home Screen</AlertDialogTitle>
-          <AlertDialogDescription>
-            {isIos
-              ? 'Tap the Share button in Safari, then select "Add to Home Screen" to install SplitWatt as an app.'
-              : "Install SplitWatt on your home screen for quick access — works offline too."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleDismiss}>Not now</AlertDialogCancel>
-          {!isIos && (
-            <AlertDialogAction onClick={handleInstall}>Install</AlertDialogAction>
-          )}
-          {isIos && (
-            <AlertDialogAction onClick={handleDismiss}>Got it</AlertDialogAction>
-          )}
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Download className="h-4 w-4 mr-2" />
+        Install App
+      </Button>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add SplitWatt to Home Screen</AlertDialogTitle>
+            <AlertDialogDescription>{getDescription()}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            {canInstallNatively && !isIos ? (
+              <AlertDialogAction onClick={handleInstall}>Install</AlertDialogAction>
+            ) : (
+              <AlertDialogAction onClick={handleGotIt}>Got it</AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

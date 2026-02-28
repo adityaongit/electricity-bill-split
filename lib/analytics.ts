@@ -181,3 +181,11 @@ export function trackCurrencyChange(from: string, to: string): void {
 export function trackCTAClick(location: "hero" | "bottom"): void {
   track("cta_click", { location })
 }
+
+// =====================
+// PWA Events
+// =====================
+
+export function trackPwaInstall(method: "native" | "manual_android" | "manual_ios"): void {
+  track("pwa_install", { method })
+}

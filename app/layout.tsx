@@ -94,6 +94,13 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicons/favicon.ico" sizes="any" />
         <meta name="theme-color" content="#4361ee" />
+        {/* Capture beforeinstallprompt early — before React mounts */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            window.__pwaPrompt = e;
+          });
+        `}} />
         {/* Preconnect to Umami for analytics - only external resource needed */}
         <link rel="preconnect" href="https://cloud.umami.is" />
         <JsonLd />
