@@ -5,6 +5,7 @@ import type { BillDetailData, FlatData } from "@/lib/data-service"
 
 const W = 780
 const PAD = 36
+const CELL_PAD = 12   // inner left/right padding inside each table cell
 const ROW_H = 40
 const FONT = "Arial, Helvetica, sans-serif"
 
@@ -14,6 +15,10 @@ function esc(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
+}
+
+function cellTx(col: { x: number; w: number; align: string }): number {
+  return col.align === "end" ? col.x + col.w - CELL_PAD : col.x + CELL_PAD
 }
 
 function buildSvg(
@@ -72,7 +77,7 @@ function buildSvg(
 
   const subHeaderCells = subCols
     .map((col) => {
-      const tx = col.align === "end" ? col.x + col.w : col.x
+      const tx = cellTx(col)
       return `<text x="${tx}" y="${subHeaderTop + 26}" font-family="${FONT}" font-size="11" font-weight="bold" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#333">${esc(col.label)}</text>`
     })
     .join("")
@@ -121,7 +126,7 @@ function buildSvg(
 
   const distHeaderCells = distCols
     .map((col) => {
-      const tx = col.align === "end" ? col.x + col.w : col.x
+      const tx = cellTx(col)
       return `<text x="${tx}" y="${distHeaderTop + 26}" font-family="${FONT}" font-size="11" font-weight="bold" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#333">${esc(col.label)}</text>`
     })
     .join("")
@@ -181,9 +186,8 @@ function rowSvg(
 ): string {
   const cellsSvg = cells
     .map(({ col, val, bold }) => {
-      const tx = col.align === "end" ? col.x + col.w : col.x
       const fw = bold ? "bold" : "normal"
-      return `<text x="${tx}" y="${y + 26}" font-family="${FONT}" font-size="12" font-weight="${fw}" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#111">${val}</text>`
+      return `<text x="${cellTx(col)}" y="${y + 26}" font-family="${FONT}" font-size="12" font-weight="${fw}" text-anchor="${col.align === "end" ? "end" : "start"}" fill="#111">${val}</text>`
     })
     .join("")
   return `
