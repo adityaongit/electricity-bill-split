@@ -12,6 +12,15 @@ export async function migrateGuestData(): Promise<void> {
     return
   }
 
+  // If the account already has flats, skip migration to avoid duplicates.
+  // This happens when a guest signs into an existing Google account.
+  const existingFlats = await fetch("/api/flats").then((r) => r.json())
+  if (existingFlats.data?.length > 0) {
+    await clearGuestDb(db)
+    clearGuest()
+    return
+  }
+
   for (const flat of flats) {
     const guestFlatId = flat._id
 
@@ -70,7 +79,11 @@ export async function migrateGuestData(): Promise<void> {
     }
   }
 
-  // Clean up IndexedDB
+  await clearGuestDb(db)
+  clearGuest()
+}
+
+async function clearGuestDb(db: Awaited<ReturnType<typeof openGuestDb>>) {
   const tx = db.transaction(["flats", "roommates", "bills", "bill_splits"], "readwrite")
   await Promise.all([
     tx.objectStore("flats").clear(),
@@ -79,8 +92,6 @@ export async function migrateGuestData(): Promise<void> {
     tx.objectStore("bill_splits").clear(),
   ])
   await tx.done
-
-  clearGuest()
 }
 
 function clearGuest() {

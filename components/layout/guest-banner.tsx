@@ -1,16 +1,26 @@
 "use client"
 
-import Link from "next/link"
+import { useState } from "react"
 import { useDataService } from "@/lib/guest-context"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { signIn } from "@/lib/auth-client"
+import { trackOAuthClick } from "@/lib/analytics"
 
 export function GuestBanner() {
   const { isGuest, isMigrating } = useDataService()
   const [mounted, setMounted] = useState(false)
+  const [signingIn, setSigningIn] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  async function handleGoogleSignIn() {
+    setSigningIn(true)
+    trackOAuthClick("google")
+    await signIn.social({ provider: "google", callbackURL: "/dashboard" })
+    setSigningIn(false)
+  }
 
   if (!mounted) return null
 
@@ -26,11 +36,14 @@ export function GuestBanner() {
 
   return (
     <div className="border-b border-border bg-muted/50 px-4 py-2 text-center text-sm text-muted-foreground">
-      You&apos;re using guest mode — data is stored locally in this browser.{" "}
-      <Link href="/signup" className="font-medium text-primary hover:text-primary/80 underline underline-offset-2">
-        Sign up
-      </Link>{" "}
-      to save it to the cloud.
+      You&apos;re using guest mode — data is stored locally.{" "}
+      <button
+        onClick={handleGoogleSignIn}
+        disabled={signingIn}
+        className="font-medium text-primary hover:text-primary/80 underline underline-offset-2 disabled:opacity-50"
+      >
+        {signingIn ? "Redirecting..." : "Save to cloud with Google"}
+      </button>
     </div>
   )
 }
