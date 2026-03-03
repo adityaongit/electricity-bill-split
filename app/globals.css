@@ -167,12 +167,8 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html {
-    overscroll-behavior: none;
-  }
   body {
     @apply bg-background text-foreground;
-    overscroll-behavior: none;
   }
 }
 
@@ -184,7 +180,7 @@
 .content-lines::before,
 .content-lines::after {
   content: "";
-  position: fixed;
+  position: absolute;
   top: 0;
   bottom: 0;
   width: 1px;
