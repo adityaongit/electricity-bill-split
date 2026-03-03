@@ -456,176 +456,200 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">Manage your profile and flats</p>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-14 w-14">
-              <AvatarFallback className="text-lg font-medium">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-medium">{displayName}</span>
+      {/* Two-column layout on lg+ */}
+      <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+        {/* Left column: Profile + Preferences */}
+        <div className="space-y-6">
+          {/* Profile card */}
+          <Card>
+            <CardContent className="pt-6 pb-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-base truncate">{displayName}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-sm text-muted-foreground truncate">{displayEmail}</span>
+                  </div>
+                  {isGuest && (
+                    <span className="inline-flex items-center mt-2 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                      Guest mode
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{displayEmail}</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferences</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="currency">Currency</Label>
-            {currencyLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Combobox
-                items={SUPPORTED_CURRENCIES.map((c) => c.code)}
-                value={currency}
-                onValueChange={handleCurrencyChange}
-                itemToStringValue={(code) => {
-                  const config = SUPPORTED_CURRENCIES.find((c) => c.code === code)
-                  return config ? `${config.symbol} ${config.name}` : code
-                }}
-                disabled={currencyUpdating}
-              >
-                <ComboboxInput
-                  id="currency"
-                  placeholder="Search currency..."
-                  disabled={currencyUpdating}
-                />
-                <ComboboxContent>
-                  <ComboboxEmpty>No currency found.</ComboboxEmpty>
-                  <ComboboxList>
-                    {(code) => {
+          {/* Preferences card */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">Preferences</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="currency" className="text-sm font-medium">Currency</Label>
+                {currencyLoading ? (
+                  <Skeleton className="h-10 w-full" />
+                ) : (
+                  <Combobox
+                    items={SUPPORTED_CURRENCIES.map((c) => c.code)}
+                    value={currency}
+                    onValueChange={handleCurrencyChange}
+                    itemToStringValue={(code) => {
                       const config = SUPPORTED_CURRENCIES.find((c) => c.code === code)
-                      if (!config) return null
-                      return (
-                        <ComboboxItem key={code} value={code}>
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className="font-medium w-6">{config.symbol}</span>
-                            <span className="text-muted-foreground">{config.name}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground">{config.code}</span>
-                        </ComboboxItem>
-                      )
+                      return config ? `${config.symbol} ${config.name}` : code
                     }}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Search and select your preferred currency for displaying amounts
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+                    disabled={currencyUpdating}
+                  >
+                    <ComboboxInput
+                      id="currency"
+                      placeholder="Search currency..."
+                      disabled={currencyUpdating}
+                    />
+                    <ComboboxContent>
+                      <ComboboxEmpty>No currency found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(code) => {
+                          const config = SUPPORTED_CURRENCIES.find((c) => c.code === code)
+                          if (!config) return null
+                          return (
+                            <ComboboxItem key={code} value={code}>
+                              <div className="flex items-center gap-2 flex-1">
+                                <span className="font-medium w-6">{config.symbol}</span>
+                                <span className="text-muted-foreground">{config.name}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{config.code}</span>
+                            </ComboboxItem>
+                          )
+                        }}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Your preferred currency for displaying amounts
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Flats</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={() => setCreateDialogOpen(true)} className="w-full gap-1.5">
-            <Plus className="h-4 w-4" />
-            Create New Flat
-          </Button>
-
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-14 w-full" />
-              <Skeleton className="h-14 w-full" />
-            </div>
-          ) : flats.length === 0 ? (
-            <div className="flex flex-col items-center py-8 text-center">
-              <Home className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground">
-                No flats yet. Create one above to get started.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {flats.map((flat) => (
-                <div
-                  key={flat._id}
-                  className="flex items-center justify-between rounded-lg border p-3"
+          {/* Danger zone (guest only) */}
+          {isGuest && (
+            <Card className="border-destructive/40">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-destructive text-base">
+                  <AlertTriangle className="h-4 w-4" />
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Permanently delete all flats, roommates, and bills stored locally in guest mode.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setClearDataDialogOpen(true)}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
-                      <Home className="h-4 w-4 text-muted-foreground" />
+                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                  Clear All Guest Data
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Right column: Flats */}
+        <Card className="h-fit">
+          <CardHeader className="flex flex-row items-center justify-between pb-4">
+            <CardTitle className="text-base">Your Flats</CardTitle>
+            <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              New Flat
+            </Button>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {loading ? (
+              <div className="space-y-3">
+                {[1,2].map(i => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg border">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{flat.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {flat.areas.length === 1
-                          ? `${flat.areas.length} room`
-                          : `${flat.areas.length} rooms`}
+                    <Skeleton className="h-8 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : flats.length === 0 ? (
+              <div className="flex flex-col items-center py-12 text-center">
+                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+                  <Home className="h-6 w-6 text-muted-foreground/50" />
+                </div>
+                <p className="text-sm font-medium">No flats yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Create a flat to get started
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border rounded-lg border overflow-hidden">
+                {flats.map((flat) => (
+                  <div
+                    key={flat._id}
+                    className="flex items-center gap-4 px-4 py-3.5 hover:bg-muted/30 transition-colors group"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <Home className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{flat.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {flat.areas.length} {flat.areas.length === 1 ? "room" : "rooms"}
+                        {flat.areas.map(a => a.label).join(", ") && (
+                          <span className="ml-1 text-muted-foreground/60">
+                            · {flat.areas.map(a => a.label).join(", ")}
+                          </span>
+                        )}
                       </p>
                       {flat.upiId && (
-                        <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
                           <CreditCard className="h-3 w-3" />
                           {flat.upiId}
                         </p>
                       )}
                     </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => openUpiDialog(flat)}
+                        title="Edit UPI settings"
+                      >
+                        <CreditCard className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDeleteFlat(flat._id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => openUpiDialog(flat)}
-                      title="Edit UPI settings"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDeleteFlat(flat._id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {isGuest && (
-        <Card className="border-destructive/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Danger Zone
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Clear all your data from the browser. This will permanently delete all flats, roommates, and bills stored in guest mode.
-              </p>
-              <Button
-                variant="destructive"
-                onClick={() => setClearDataDialogOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear All Guest Data
-              </Button>
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
+      </div>
 
       <CreateFlatDialog
         open={createDialogOpen}
