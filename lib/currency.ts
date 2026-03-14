@@ -58,7 +58,7 @@ export const SUPPORTED_CURRENCIES = [
 ] as const
 
 export type CurrencyCode = typeof SUPPORTED_CURRENCIES[number]["code"]
-export const DEFAULT_CURRENCY: CurrencyCode = "INR"
+export const DEFAULT_CURRENCY: CurrencyCode = "USD"
 
 export function getCurrencyConfig(code: CurrencyCode) {
   return SUPPORTED_CURRENCIES.find((c) => c.code === code) ?? SUPPORTED_CURRENCIES[0]

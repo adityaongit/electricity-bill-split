@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
+import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { calculateBill } from "@/lib/bill-calculator"
 import type { BillResult, RoommateInput } from "@/lib/bill-calculator"
@@ -37,6 +39,23 @@ import {
   trackBillCreateSuccess,
   trackBillCreateFailed,
 } from "@/lib/analytics"
+import type { AreaInput } from "@/lib/data-service"
+
+interface SetupRoommateDraft {
+  id: string
+  name: string
+  area: string
+}
+
+function createSlug(value: string, index: number) {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+
+  return normalized || `area-${index + 1}`
+}
 
 export default function NewBillPage() {
   const router = useRouter()
@@ -48,12 +67,18 @@ export default function NewBillPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [autoFilled, setAutoFilled] = useState(false)
+  const [quickSetupSubmitting, setQuickSetupSubmitting] = useState(false)
 
   // Bill form state
   const [dateFrom, setDateFrom] = useState<Date | undefined>()
   const [dateTo, setDateTo] = useState<Date | undefined>()
   const [totalBill, setTotalBill] = useState("")
   const [totalUnits, setTotalUnits] = useState("")
+
+  const [quickSetupAreas, setQuickSetupAreas] = useState<string[]>(["Room 1", "Room 2"])
+  const [quickSetupRoommates, setQuickSetupRoommates] = useState<SetupRoommateDraft[]>([
+    { id: crypto.randomUUID(), name: "", area: "room-1" },
+  ])
 
   // Dynamic submeter readings state
   const [submeterReadings, setSubmeterReadings] = useState<
@@ -197,6 +222,105 @@ export default function NewBillPage() {
     setAutoFilled(false)
   }
 
+  function updateQuickSetupArea(index: number, value: string) {
+    setQuickSetupAreas((prev) => {
+      const previousLabel = prev[index]
+      const next = prev.map((label, idx) => (idx === index ? value : label))
+      const previousSlug = createSlug(previousLabel, index)
+      const nextSlug = createSlug(value, index)
+
+      if (previousSlug !== nextSlug) {
+        setQuickSetupRoommates((roommatesPrev) =>
+          roommatesPrev.map((roommate) =>
+            roommate.area === previousSlug ? { ...roommate, area: nextSlug } : roommate
+          )
+        )
+      }
+
+      return next
+    })
+  }
+
+  function addQuickSetupArea() {
+    setQuickSetupAreas((prev) => [...prev, `Room ${prev.length + 1}`])
+  }
+
+  function removeQuickSetupArea(index: number) {
+    setQuickSetupAreas((prev) => {
+      if (prev.length === 1) return prev
+      const next = prev.filter((_, idx) => idx !== index)
+      setQuickSetupRoommates((roommatesPrev) =>
+        roommatesPrev.map((roommate) => {
+          if (roommate.area !== createSlug(prev[index], index)) return roommate
+          return { ...roommate, area: createSlug(next[0], 0) }
+        })
+      )
+      return next
+    })
+  }
+
+  function addQuickSetupRoommate() {
+    const firstArea = createSlug(quickSetupAreas[0] ?? "Room 1", 0)
+    setQuickSetupRoommates((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), name: "", area: firstArea },
+    ])
+  }
+
+  function updateQuickSetupRoommate(id: string, field: "name" | "area", value: string) {
+    setQuickSetupRoommates((prev) =>
+      prev.map((roommate) => (roommate.id === id ? { ...roommate, [field]: value } : roommate))
+    )
+  }
+
+  function removeQuickSetupRoommate(id: string) {
+    setQuickSetupRoommates((prev) => (prev.length === 1 ? prev : prev.filter((roommate) => roommate.id !== id)))
+  }
+
+  async function handleQuickSetupSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    const cleanedAreas = quickSetupAreas.map((label) => label.trim()).filter(Boolean)
+    if (cleanedAreas.length === 0) {
+      toast.error("Add at least one area or room")
+      return
+    }
+
+    const areas: AreaInput[] = cleanedAreas.map((label, index) => ({
+      slug: createSlug(label, index),
+      label,
+    }))
+
+    const validRoommates = quickSetupRoommates
+      .map((roommate) => ({ ...roommate, name: roommate.name.trim() }))
+      .filter((roommate) => roommate.name)
+
+    if (validRoommates.length === 0) {
+      toast.error("Add at least one roommate to continue")
+      return
+    }
+
+    setQuickSetupSubmitting(true)
+
+    try {
+      const flat = await service.createFlat("My Flat", areas)
+      await Promise.all(
+        validRoommates.map((roommate) =>
+          service.createRoommate(flat._id, roommate.name, roommate.area)
+        )
+      )
+
+      const nextFlats = [flat]
+      setFlats(nextFlats)
+      setSelectedFlat(flat)
+      toast.success("Setup complete. Enter the bill details now.")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create your quick setup")
+    } finally {
+      setQuickSetupSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -207,13 +331,144 @@ export default function NewBillPage() {
   }
 
   if (flats.length === 0) {
+    const areaOptions = quickSetupAreas.map((label, index) => ({
+      slug: createSlug(label, index),
+      label: label.trim() || `Room ${index + 1}`,
+    }))
+
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h2 className="text-xl font-semibold">No flat set up yet</h2>
-        <p className="mt-2 text-muted-foreground">Create a flat in Settings first.</p>
-        <Button className="mt-4" asChild>
-          <a href="/settings">Go to Settings</a>
-        </Button>
+      <div className="mx-auto max-w-3xl space-y-6 py-6 sm:py-8">
+        <div className="space-y-2 px-1">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Start with the bill, not the setup</h1>
+          <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            Add the rooms and roommates needed for this bill. We&apos;ll use a temporary flat name
+            and the default currency for now. You can change both later from{" "}
+            <Link href="/settings" className="underline underline-offset-4">
+              Settings
+            </Link>
+            .
+          </p>
+        </div>
+
+        <form onSubmit={handleQuickSetupSubmit}>
+          <Card className="border-border/70 shadow-none">
+            <CardHeader>
+              <CardTitle>Quick setup</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 px-4 pb-4 sm:px-6 sm:pb-6">
+              <div className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-medium">Areas / submeters</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add the places you track separately, like Hall, Room 1, or Kitchen.
+                    </p>
+                  </div>
+                  <Button type="button" variant="outline" onClick={addQuickSetupArea} className="w-full sm:w-auto">
+                    Add area
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {quickSetupAreas.map((label, index) => (
+                    <div key={`${index}-${label}`} className="rounded-lg border p-3 sm:p-4">
+                      <div className="flex items-center gap-3">
+                      <Input
+                        value={label}
+                        onChange={(e) => updateQuickSetupArea(index, e.target.value)}
+                        placeholder={`Room ${index + 1}`}
+                        className="w-full"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={quickSetupAreas.length === 1}
+                        onClick={() => removeQuickSetupArea(index)}
+                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-medium">Roommates</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add at least one roommate and assign them to an area.
+                    </p>
+                  </div>
+                  <Button type="button" variant="outline" onClick={addQuickSetupRoommate} className="w-full sm:w-auto">
+                    Add roommate
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {quickSetupRoommates.map((roommate, index) => (
+                    <div key={roommate.id} className="rounded-lg border p-3 sm:p-4">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <Label htmlFor={`roommate-${roommate.id}`}>Roommate {index + 1}</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={quickSetupRoommates.length === 1}
+                          onClick={() => removeQuickSetupRoommate(roommate.id)}
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-3 sm:grid sm:grid-cols-[minmax(0,1fr)_180px] sm:items-end sm:gap-3 sm:space-y-0">
+                        <Input
+                          id={`roommate-${roommate.id}`}
+                          value={roommate.name}
+                          onChange={(e) => updateQuickSetupRoommate(roommate.id, "name", e.target.value)}
+                          placeholder="Enter name"
+                        />
+                        <div className="space-y-2">
+                          <Label>Area</Label>
+                          <Select
+                            value={roommate.area}
+                            onValueChange={(value) => updateQuickSetupRoommate(roommate.id, "area", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select area" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {areaOptions.map((area) => (
+                                <SelectItem key={area.slug} value={area.slug}>
+                                  {area.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-md text-sm text-muted-foreground">
+                  Flat name defaults to <span className="font-medium text-foreground">My Flat</span>.
+                  Currency stays <span className="font-medium text-foreground">{currency}</span> until you change it.
+                </p>
+                <Button type="submit" disabled={quickSetupSubmitting} className="w-full sm:w-auto">
+                  {quickSetupSubmitting ? "Preparing..." : "Continue to bill"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
       </div>
     )
   }
