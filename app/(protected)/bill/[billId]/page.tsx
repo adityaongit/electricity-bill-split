@@ -283,14 +283,14 @@ export default function BillDetailPage({
 
       <Separator />
 
-      <div className="flex gap-2">
-        <Button variant="outline" asChild>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
           <Link href="/bill/history">Back to History</Link>
         </Button>
-        <Button variant="outline" asChild>
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
           <Link href="/bill/new">Create New Bill</Link>
         </Button>
-        <Button variant="outline" asChild>
+        <Button variant="outline" className="w-full sm:w-auto" asChild>
           <Link href={`/bill/${billId}/edit`}>Edit Bill</Link>
         </Button>
       </div>

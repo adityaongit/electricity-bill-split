@@ -236,12 +236,12 @@ export default function DashboardPage() {
       {chartData.length > 0 ? (
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Area chart — spending trend */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Spending Trend</CardTitle>
               <CardDescription className="text-xs">Bill amounts over time</CardDescription>
             </CardHeader>
-            <CardContent className="pb-4 px-3">
+            <CardContent className="min-w-0 pb-4 px-3">
               <ChartContainer config={spendingChartConfig} className="h-[200px] w-full">
                 <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                   <defs>
@@ -289,12 +289,12 @@ export default function DashboardPage() {
           </Card>
 
           {/* Bar chart — units consumed */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Units Consumed</CardTitle>
               <CardDescription className="text-xs">Electricity units per billing period</CardDescription>
             </CardHeader>
-            <CardContent className="pb-4 px-3">
+            <CardContent className="min-w-0 pb-4 px-3">
               <ChartContainer config={unitsChartConfig} className="h-[200px] w-full">
                 <BarChart
                   data={chartData}
@@ -352,7 +352,7 @@ export default function DashboardPage() {
       {recentBill && (
         <Card>
           <CardContent className="p-5">
-            <div className="flex items-center justify-between gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <div className="min-w-0">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Most Recent Bill</p>
                 <p className="font-semibold text-sm">
@@ -370,7 +370,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="shrink-0" asChild>
+              <Button variant="outline" size="sm" className="w-full shrink-0 sm:w-auto" asChild>
                 <Link href={`/bill/${recentBill._id}`}>View Details</Link>
               </Button>
             </div>
