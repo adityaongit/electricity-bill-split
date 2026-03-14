@@ -69,21 +69,6 @@ export function Header() {
     }
   };
 
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
-  ) => {
-    e.preventDefault();
-    closeMenu();
-
-    setTimeout(() => {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-      }
-    }, 200);
-  };
-
   return (
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -93,22 +78,28 @@ export function Header() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
             <Link
-              href="#features"
+              href="/#features"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
               Features
             </Link>
             <Link
-              href="#how-it-works"
+              href="/#how-it-works"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
               How It Works
             </Link>
             <Link
-              href="#faq"
+              href="/#faq"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
               FAQ
+            </Link>
+            <Link
+              href="/contact"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              Contact
             </Link>
             <ThemeToggle />
             <Link href="/login">
@@ -173,27 +164,34 @@ export function Header() {
 
               {/* Menu Content */}
               <nav className="px-6 pb-6 space-y-1">
-                <a
-                  href="#features"
-                  onClick={(e) => handleNavClick(e, "#features")}
+                <Link
+                  href="/#features"
+                  onClick={closeMenu}
                   className="block px-4 py-4 rounded-xl hover:bg-muted transition-colors text-lg font-medium cursor-pointer"
                 >
                   Features
-                </a>
-                <a
-                  href="#how-it-works"
-                  onClick={(e) => handleNavClick(e, "#how-it-works")}
+                </Link>
+                <Link
+                  href="/#how-it-works"
+                  onClick={closeMenu}
                   className="block px-4 py-4 rounded-xl hover:bg-muted transition-colors text-lg font-medium cursor-pointer"
                 >
                   How It Works
-                </a>
-                <a
-                  href="#faq"
-                  onClick={(e) => handleNavClick(e, "#faq")}
+                </Link>
+                <Link
+                  href="/#faq"
+                  onClick={closeMenu}
                   className="block px-4 py-4 rounded-xl hover:bg-muted transition-colors text-lg font-medium cursor-pointer"
                 >
                   FAQ
-                </a>
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={closeMenu}
+                  className="block px-4 py-4 rounded-xl hover:bg-muted transition-colors text-lg font-medium cursor-pointer"
+                >
+                  Contact
+                </Link>
 
                 <div className="flex items-center justify-between px-4 py-4">
                   <span className="text-lg font-medium">Theme</span>
