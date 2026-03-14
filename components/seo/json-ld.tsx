@@ -36,7 +36,7 @@ export function JsonLd() {
           "Auto-reading fill from previous bills",
           "Guest mode - no signup required",
         ],
-        screenshot: `${baseUrl}/og-image.png`,
+        screenshot: `${baseUrl}/opengraph-image`,
         softwareVersion: "2.0",
         author: {
           "@type": "Organization",
@@ -52,7 +52,7 @@ export function JsonLd() {
         "@id": `${baseUrl}#organization`,
         name: config.app.author,
         url: baseUrl,
-        logo: `${baseUrl}/logo.png`,
+        logo: `${baseUrl}/apple-touch-icon.png`,
         description:
           "Free electricity bill splitter for roommates and flatmates. Calculate fair shares based on submeter readings and days stayed.",
         sameAs: [],

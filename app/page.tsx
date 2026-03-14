@@ -1,13 +1,14 @@
-"use client"
-
+import type { Metadata } from "next"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { FaqSchema, faqs } from "@/components/seo/faq-schema"
 import { HowToSchema } from "@/components/seo/howto-schema"
+import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema"
+import { TrackedButton } from "@/components/landing/tracked-button"
 import dynamic from "next/dynamic"
 import {
   BarChart3,
@@ -17,8 +18,13 @@ import {
   RefreshCw,
   ScrollText,
 } from "lucide-react"
-import { trackCTAClick } from "@/lib/analytics"
 import { config } from "@/lib/config"
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: config.app.url,
+  },
+}
 
 // Lazy load FAQ accordion - it's below the fold and not critical for initial render
 const FaqAccordion = dynamic(() => import("@/components/faq-accordion").then(mod => ({ default: mod.FaqAccordion })), {
@@ -26,23 +32,12 @@ const FaqAccordion = dynamic(() => import("@/components/faq-accordion").then(mod
   ssr: true, // Still SSR for SEO but code split for smaller initial bundle
 })
 
-function TrackedButton({ href, children, location, ...props }: { href: string; children: React.ReactNode; location: "hero" | "bottom" } & React.ComponentProps<typeof Button>) {
-  const handleClick = () => {
-    trackCTAClick(location)
-  }
-
-  return (
-    <Link href={href} onClick={handleClick}>
-      <Button {...props}>{children}</Button>
-    </Link>
-  )
-}
-
 export default function LandingPage() {
   return (
     <div className="content-lines flex min-h-screen flex-col">
       <FaqSchema />
       <HowToSchema />
+      <BreadcrumbSchema items={[]} />
       <Header />
 
       <main className="flex-1">

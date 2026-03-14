@@ -4,10 +4,14 @@ import { AuthCard } from "@/components/auth/auth-card"
 import { LoginForm } from "@/components/auth/login-form"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
 import { GuestButton } from "@/components/auth/guest-button"
+import { config } from "@/lib/config"
 
 export const metadata: Metadata = {
   title: "Log In",
   robots: { index: false },
+  alternates: {
+    canonical: `${config.app.url}/login`,
+  },
 }
 
 export default function LoginPage() {

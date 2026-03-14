@@ -4,10 +4,14 @@ import { AuthCard } from "@/components/auth/auth-card"
 import { SignupForm } from "@/components/auth/signup-form"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
 import { GuestButton } from "@/components/auth/guest-button"
+import { config } from "@/lib/config"
 
 export const metadata: Metadata = {
   title: "Sign Up",
   robots: { index: false },
+  alternates: {
+    canonical: `${config.app.url}/signup`,
+  },
 }
 
 export default function SignupPage() {

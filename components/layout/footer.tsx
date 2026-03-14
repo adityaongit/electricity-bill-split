@@ -47,24 +47,33 @@ export function Footer() {
               <div className="flex gap-3">
                 <a
                   href={config.social.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
                   aria-label="GitHub"
                 >
                   <Github className="h-4 w-4" />
+                  <span className="sr-only">GitHub</span>
                 </a>
                 <a
                   href={config.social.x}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
                   aria-label="X"
                 >
                   <XIcon className="h-4 w-4" />
+                  <span className="sr-only">X</span>
                 </a>
                 <a
                   href={config.social.discord}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
                   aria-label="Discord"
                 >
                   <DiscordIcon className="h-4 w-4" />
+                  <span className="sr-only">Discord</span>
                 </a>
                 <a
                   href={`mailto:${config.social.email}`}
@@ -72,6 +81,7 @@ export function Footer() {
                   aria-label="Email"
                 >
                   <Mail className="h-4 w-4" />
+                  <span className="sr-only">Email</span>
                 </a>
               </div>
             </div>
@@ -90,7 +100,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#features"
+                    href="/#features"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Features
@@ -98,18 +108,18 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="/bill/history"
+                    href="/#faq"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Bill History
+                    FAQ
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/roommates"
+                    href="/contact"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Roommates
+                    Contact
                   </Link>
                 </li>
               </ul>
@@ -121,7 +131,7 @@ export function Footer() {
               <ul className="space-y-3">
                 <li>
                   <Link
-                    href="#how-it-works"
+                    href="/#how-it-works"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
                     How It Works
@@ -129,11 +139,31 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#faq"
+                    href="/sitemap.xml"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    FAQ
+                    Sitemap
                   </Link>
+                </li>
+                <li>
+                  <a
+                    href={config.social.repository}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    GitHub Repository
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={`${config.social.repository}/issues`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Report an Issue
+                  </a>
                 </li>
               </ul>
             </div>

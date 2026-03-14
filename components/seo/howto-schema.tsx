@@ -9,7 +9,7 @@ export function HowToSchema() {
     name: "How to Split Electricity Bills with Roommates Using Submeter Readings",
     description:
       "Step-by-step guide to fairly calculate and split electricity bills among roommates based on individual submeter readings and days stayed.",
-    image: `${baseUrl}/og-image.png`,
+    image: `${baseUrl}/opengraph-image`,
     totalTime: "PT10M",
     estimatedCost: {
       "@type": "MonetaryAmount",

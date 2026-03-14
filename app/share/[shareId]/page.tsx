@@ -15,10 +15,33 @@ import { DEFAULT_CURRENCY } from "@/lib/currency"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import type { BillDetailData, FlatData } from "@/lib/data-service"
+import type { Metadata } from "next"
+import { config } from "@/lib/config"
+import { getSharePreviewData } from "@/lib/share-preview"
 
 interface SharePageProps {
   params: {
     shareId: string
+  }
+}
+
+export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
+  const { shareId } = await params
+  const preview = await getSharePreviewData(shareId)
+  const canonical = `${config.app.url}/share/${shareId}`
+
+  if (!preview) {
+    return {
+      title: "Shared Bill Not Found",
+      description: "This shared electricity bill link is missing or has expired.",
+      alternates: { canonical },
+    }
+  }
+
+  return {
+    title: `Shared Bill for ${formatDate(preview.billingPeriod.from)} to ${formatDate(preview.billingPeriod.to)}`,
+    description: `View a shared ${formatCurrency(preview.totalBill)} electricity bill split across ${preview.roommateCount} roommate${preview.roommateCount === 1 ? "" : "s"}.`,
+    alternates: { canonical },
   }
 }
 

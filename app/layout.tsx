@@ -53,20 +53,11 @@ export const metadata: Metadata = {
     title: "Electricity Bill Splitter | Calculate & Share Utility Costs Fairly",
     description:
       "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: `${config.app.name} - Electricity Bill Splitter`,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `Electricity Bill Splitter | Calculate & Share Utility Costs Fairly - ${config.app.name}`,
     description: "Split your electricity bills fairly with roommates based on submeter readings. Calculate individual shares with our free utility bill calculator.",
-    images: ["/twitter-og.png"],
   },
   robots: {
     index: true,
@@ -81,9 +72,6 @@ export const metadata: Metadata = {
   },
   verification: {
     google: config.analytics.googleVerification,
-  },
-  alternates: {
-    canonical: config.app.url,
   },
 }
 
