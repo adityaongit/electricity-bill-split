@@ -19,9 +19,10 @@ import { formatCurrency, formatDateShort } from "@/lib/utils"
 import { useDataService } from "@/lib/guest-context"
 import { useCurrency } from "@/lib/currency-context"
 import type { BillData } from "@/lib/data-service"
-import { trackBillHistoryView } from "@/lib/analytics"
+import { trackAuthPromptShown, trackBillHistoryView } from "@/lib/analytics"
 import { Trash2, Plus, Zap, ChevronRight, ChevronLeft } from "lucide-react"
 import { toast } from "sonner"
+import { GuestConversionDialog } from "@/components/auth/guest-conversion-dialog"
 
 interface Pagination {
   page: number
@@ -31,7 +32,7 @@ interface Pagination {
 }
 
 export default function BillHistoryPage() {
-  const { service } = useDataService()
+  const { service, isGuest } = useDataService()
   const { currency } = useCurrency()
   const [bills, setBills] = useState<BillData[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
@@ -42,6 +43,7 @@ export default function BillHistoryPage() {
     bill: null,
   })
   const [deleting, setDeleting] = useState(false)
+  const [promptOpen, setPromptOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -96,6 +98,26 @@ export default function BillHistoryPage() {
           </Link>
         </Button>
       </div>
+
+      {isGuest && bills.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-medium">Keep your history across devices</p>
+            <p className="text-sm text-muted-foreground">
+              Your guest history stays in this browser unless you save it to an account.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              trackAuthPromptShown("history")
+              setPromptOpen(true)
+            }}
+          >
+            Save to cloud with Google
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="rounded-xl border overflow-hidden">
@@ -326,6 +348,13 @@ export default function BillHistoryPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <GuestConversionDialog
+        open={promptOpen}
+        onOpenChange={setPromptOpen}
+        source="history"
+        title="Create an account to keep your bill history"
+        description="Save your bill history to an account to sync it across devices and avoid losing it if you clear this browser."
+      />
     </div>
   )
 }

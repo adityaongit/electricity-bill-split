@@ -74,26 +74,58 @@ interface GuestDBSchema extends DBSchema {
       updatedAt: string
     }
   }
+  onboarding_drafts: {
+    key: string
+    value: {
+      key: string
+      value: {
+        selectedFlatId?: string
+        quickSetupAreas: string[]
+        quickSetupRoommates: { id: string; name: string; area: string }[]
+        dateFrom?: string
+        dateTo?: string
+        totalBill: string
+        totalUnits: string
+        submeterReadings: Record<string, { previous: string; current: string }>
+        roommatesDays: Record<string, string>
+      }
+      updatedAt: string
+    }
+  }
 }
 
 let dbPromise: Promise<IDBPDatabase<GuestDBSchema>> | null = null
 
 export function openGuestDb() {
   if (!dbPromise) {
-    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 1, {
+    dbPromise = openDB<GuestDBSchema>("splitwatt-guest", 2, {
       upgrade(db) {
-        db.createObjectStore("flats", { keyPath: "_id" })
+        if (!db.objectStoreNames.contains("flats")) {
+          db.createObjectStore("flats", { keyPath: "_id" })
+        }
 
-        const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
-        roommateStore.createIndex("flatId", "flatId")
+        if (!db.objectStoreNames.contains("roommates")) {
+          const roommateStore = db.createObjectStore("roommates", { keyPath: "_id" })
+          roommateStore.createIndex("flatId", "flatId")
+        }
 
-        const billStore = db.createObjectStore("bills", { keyPath: "_id" })
-        billStore.createIndex("flatId", "flatId")
+        if (!db.objectStoreNames.contains("bills")) {
+          const billStore = db.createObjectStore("bills", { keyPath: "_id" })
+          billStore.createIndex("flatId", "flatId")
+        }
 
-        const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
-        splitStore.createIndex("billId", "billId")
+        if (!db.objectStoreNames.contains("bill_splits")) {
+          const splitStore = db.createObjectStore("bill_splits", { keyPath: "_id" })
+          splitStore.createIndex("billId", "billId")
+        }
 
-        db.createObjectStore("user_settings", { keyPath: "key" })
+        if (!db.objectStoreNames.contains("user_settings")) {
+          db.createObjectStore("user_settings", { keyPath: "key" })
+        }
+
+        if (!db.objectStoreNames.contains("onboarding_drafts")) {
+          db.createObjectStore("onboarding_drafts", { keyPath: "key" })
+        }
       },
     })
   }
@@ -102,7 +134,7 @@ export function openGuestDb() {
 
 export async function clearGuestDb() {
   const db = await openGuestDb()
-  const tx = db.transaction(['flats', 'roommates', 'bills', 'bill_splits', 'user_settings'], 'readwrite')
+  const tx = db.transaction(['flats', 'roommates', 'bills', 'bill_splits', 'user_settings', 'onboarding_drafts'], 'readwrite')
 
   await Promise.all([
     tx.objectStore('flats').clear(),
@@ -110,6 +142,7 @@ export async function clearGuestDb() {
     tx.objectStore('bills').clear(),
     tx.objectStore('bill_splits').clear(),
     tx.objectStore('user_settings').clear(),
+    tx.objectStore('onboarding_drafts').clear(),
   ])
 
   await tx.done

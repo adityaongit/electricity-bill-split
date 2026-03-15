@@ -182,6 +182,22 @@ export function trackCTAClick(location: "hero" | "bottom"): void {
   track("cta_click", { location })
 }
 
+export function trackDemoOpen(location: "hero" | "bottom"): void {
+  track("demo_open", { location })
+}
+
+export function trackStarterDraftOpen(source: "fresh" | "resume" | "sample"): void {
+  track("starter_draft_open", { source })
+}
+
+export function trackStarterDraftResume(): void {
+  track("starter_draft_resume")
+}
+
+export function trackAuthPromptShown(source: "save" | "share" | "history"): void {
+  track("auth_prompt_shown", { source })
+}
+
 // =====================
 // Share Events
 // =====================

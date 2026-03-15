@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,8 +38,18 @@ import {
   trackBillCreateInitiate,
   trackBillCreateSuccess,
   trackBillCreateFailed,
+  trackStarterDraftOpen,
+  trackStarterDraftResume,
+  trackAuthPromptShown,
 } from "@/lib/analytics"
 import type { AreaInput } from "@/lib/data-service"
+import {
+  clearOnboardingDraft,
+  getOnboardingDraft,
+  saveOnboardingDraft,
+  type OnboardingDraft,
+} from "@/lib/onboarding-draft"
+import { GuestConversionDialog } from "@/components/auth/guest-conversion-dialog"
 
 interface SetupRoommateDraft {
   id: string
@@ -57,9 +67,35 @@ function createSlug(value: string, index: number) {
   return normalized || `area-${index + 1}`
 }
 
+function getCurrentMonthRange() {
+  const now = new Date()
+  return {
+    from: new Date(now.getFullYear(), now.getMonth(), 1),
+    to: now,
+  }
+}
+
+const DEFAULT_QUICK_SETUP_AREAS = ["Hall", "Room 1", "Room 2"]
+
+const SAMPLE_SETUP = {
+  areas: ["Hall", "Room 1", "Room 2"],
+  roommates: [
+    { id: "sample-roommate-1", name: "Aarav", area: "room-1" },
+    { id: "sample-roommate-2", name: "Mia", area: "room-2" },
+  ],
+  totalBill: "128.50",
+  totalUnits: "76",
+  submeterReadings: {
+    hall: { previous: "210", current: "228" },
+    "room-1": { previous: "510", current: "536" },
+    "room-2": { previous: "400", current: "432" },
+  },
+}
+
 export default function NewBillPage() {
   const router = useRouter()
-  const { service } = useDataService()
+  const searchParams = useSearchParams()
+  const { service, isGuest } = useDataService()
   const { currency } = useCurrency()
   const [flats, setFlats] = useState<FlatData[]>([])
   const [selectedFlat, setSelectedFlat] = useState<FlatData | null>(null)
@@ -68,6 +104,8 @@ export default function NewBillPage() {
   const [submitting, setSubmitting] = useState(false)
   const [autoFilled, setAutoFilled] = useState(false)
   const [quickSetupSubmitting, setQuickSetupSubmitting] = useState(false)
+  const [showSavePrompt, setShowSavePrompt] = useState(false)
+  const [pendingSavedBillId, setPendingSavedBillId] = useState<string | null>(null)
 
   // Bill form state
   const [dateFrom, setDateFrom] = useState<Date | undefined>()
@@ -75,7 +113,7 @@ export default function NewBillPage() {
   const [totalBill, setTotalBill] = useState("")
   const [totalUnits, setTotalUnits] = useState("")
 
-  const [quickSetupAreas, setQuickSetupAreas] = useState<string[]>(["Room 1", "Room 2"])
+  const [quickSetupAreas, setQuickSetupAreas] = useState<string[]>(DEFAULT_QUICK_SETUP_AREAS)
   const [quickSetupRoommates, setQuickSetupRoommates] = useState<SetupRoommateDraft[]>([
     { id: crypto.randomUUID(), name: "", area: "room-1" },
   ])
@@ -85,14 +123,53 @@ export default function NewBillPage() {
     Record<string, { previous: string; current: string }>
   >({})
   const [roommatesDays, setRoommatesDays] = useState<Record<string, string>>({})
+  const restoredDraftRef = useRef<OnboardingDraft | null>(null)
+  const sampleRequestedRef = useRef(searchParams.get("sample") === "1")
+  const sampleAppliedRef = useRef(false)
 
   useEffect(() => {
-    service.getFlats().then((data) => {
+    async function loadInitialState() {
+      const [data, draft] = await Promise.all([
+        service.getFlats(),
+        isGuest ? getOnboardingDraft() : Promise.resolve(null),
+      ])
+
       setFlats(data)
-      if (data.length > 0) setSelectedFlat(data[0])
+
+      if (draft) {
+        restoredDraftRef.current = draft
+        setQuickSetupAreas(draft.quickSetupAreas)
+        setQuickSetupRoommates(draft.quickSetupRoommates)
+        setDateFrom(draft.dateFrom ? new Date(draft.dateFrom) : undefined)
+        setDateTo(draft.dateTo ? new Date(draft.dateTo) : undefined)
+        setTotalBill(draft.totalBill)
+        setTotalUnits(draft.totalUnits)
+        setSubmeterReadings(draft.submeterReadings)
+        setRoommatesDays(draft.roommatesDays)
+        trackStarterDraftResume()
+      } else {
+        const range = getCurrentMonthRange()
+        setDateFrom(range.from)
+        setDateTo(range.to)
+        if (sampleRequestedRef.current) {
+          setQuickSetupAreas(SAMPLE_SETUP.areas)
+          setQuickSetupRoommates(SAMPLE_SETUP.roommates)
+          trackStarterDraftOpen("sample")
+        } else {
+          trackStarterDraftOpen("fresh")
+        }
+      }
+
+      if (data.length > 0) {
+        const draftFlat = draft?.selectedFlatId
+        setSelectedFlat(data.find((flat) => flat._id === draftFlat) ?? data[0])
+      }
+
       setLoading(false)
-    })
-  }, [service])
+    }
+
+    loadInitialState()
+  }, [service, isGuest])
 
   useEffect(() => {
     if (!selectedFlat) return
@@ -115,7 +192,35 @@ export default function NewBillPage() {
       })
       setSubmeterReadings(initialReadings)
 
-      // Auto-fill from last bill
+      const restoredDraft = restoredDraftRef.current
+      if (restoredDraft?.selectedFlatId === selectedFlat._id) {
+        setRoommatesDays({ ...days, ...restoredDraft.roommatesDays })
+        setSubmeterReadings(
+          Object.keys(restoredDraft.submeterReadings).length > 0
+            ? restoredDraft.submeterReadings
+            : initialReadings
+        )
+        restoredDraftRef.current = null
+        return
+      }
+
+      if (sampleRequestedRef.current && !sampleAppliedRef.current) {
+        const sampleDays: Record<string, string> = {}
+        rm.forEach((roommate) => {
+          sampleDays[roommate._id] = "30"
+        })
+        setRoommatesDays(sampleDays)
+        setTotalBill(SAMPLE_SETUP.totalBill)
+        setTotalUnits(SAMPLE_SETUP.totalUnits)
+        setSubmeterReadings({
+          hall: { ...SAMPLE_SETUP.submeterReadings.hall },
+          "room-1": { ...SAMPLE_SETUP.submeterReadings["room-1"] },
+          "room-2": { ...SAMPLE_SETUP.submeterReadings["room-2"] },
+        })
+        sampleAppliedRef.current = true
+        return
+      }
+
       const latestBill = billsResult.bills[0]
       if (latestBill?.submeterReadings) {
         const autoFilledReadings: Record<string, { previous: string; current: string }> = {}
@@ -132,6 +237,36 @@ export default function NewBillPage() {
       }
     })
   }, [selectedFlat, service])
+
+  useEffect(() => {
+    if (!isGuest || loading) return
+
+    const draft: OnboardingDraft = {
+      selectedFlatId: selectedFlat?._id,
+      quickSetupAreas,
+      quickSetupRoommates,
+      dateFrom: dateFrom?.toISOString(),
+      dateTo: dateTo?.toISOString(),
+      totalBill,
+      totalUnits,
+      submeterReadings,
+      roommatesDays,
+    }
+
+    void saveOnboardingDraft(draft)
+  }, [
+    isGuest,
+    loading,
+    selectedFlat?._id,
+    quickSetupAreas,
+    quickSetupRoommates,
+    dateFrom,
+    dateTo,
+    totalBill,
+    totalUnits,
+    submeterReadings,
+    roommatesDays,
+  ])
 
   const roommateInputs: RoommateInput[] = useMemo(
     () =>
@@ -204,7 +339,14 @@ export default function NewBillPage() {
 
       trackBillCreateSuccess(parseFloat(totalBill), roommates.length)
       toast.success("Bill created!")
-      router.push(`/bill/${result._id}`)
+      if (isGuest) {
+        await clearOnboardingDraft()
+        trackAuthPromptShown("save")
+        setPendingSavedBillId(result._id)
+        setShowSavePrompt(true)
+      } else {
+        router.push(`/bill/${result._id}`)
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Failed to create bill"
       trackBillCreateFailed(errorMsg)
@@ -220,6 +362,14 @@ export default function NewBillPage() {
       [slug]: { ...prev[slug], [field]: value },
     }))
     setAutoFilled(false)
+  }
+
+  function applySampleSetup() {
+    setQuickSetupAreas(SAMPLE_SETUP.areas)
+    setQuickSetupRoommates(SAMPLE_SETUP.roommates.map((roommate) => ({ ...roommate })))
+    sampleRequestedRef.current = true
+    sampleAppliedRef.current = false
+    trackStarterDraftOpen("sample")
   }
 
   function updateQuickSetupArea(index: number, value: string) {
@@ -313,6 +463,9 @@ export default function NewBillPage() {
       const nextFlats = [flat]
       setFlats(nextFlats)
       setSelectedFlat(flat)
+      const range = getCurrentMonthRange()
+      setDateFrom(range.from)
+      setDateTo(range.to)
       toast.success("Setup complete. Enter the bill details now.")
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create your quick setup")
@@ -347,6 +500,9 @@ export default function NewBillPage() {
               Settings
             </Link>
             .
+          </p>
+          <p className="text-sm text-muted-foreground">
+            No signup needed. Data stays in your browser unless you create an account.
           </p>
         </div>
 
@@ -462,9 +618,14 @@ export default function NewBillPage() {
                   Flat name defaults to <span className="font-medium text-foreground">My Flat</span>.
                   Currency stays <span className="font-medium text-foreground">{currency}</span> until you change it.
                 </p>
-                <Button type="submit" disabled={quickSetupSubmitting} className="w-full sm:w-auto">
-                  {quickSetupSubmitting ? "Preparing..." : "Continue to bill"}
-                </Button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                  <Button type="button" variant="ghost" onClick={applySampleSetup} className="w-full sm:w-auto">
+                    Use sample data
+                  </Button>
+                  <Button type="submit" disabled={quickSetupSubmitting} className="w-full sm:w-auto">
+                    {quickSetupSubmitting ? "Preparing..." : "Continue to bill"}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -474,15 +635,28 @@ export default function NewBillPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
           <h1 className="text-2xl font-bold">New Bill</h1>
           <p className="text-muted-foreground">Enter bill details and see the split live</p>
+          {isGuest && (
+            <p className="text-sm text-muted-foreground">
+              No signup needed. Your work stays in this browser unless you choose to save it to an account.
+            </p>
+          )}
         </div>
-        <Button type="submit" disabled={submitting || !preview || !dateFrom || !dateTo}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+        <Button type="submit" disabled={submitting || !preview || !dateFrom || !dateTo} className="w-full sm:w-auto">
           {submitting ? "Saving..." : "Save Bill"}
         </Button>
+        {!sampleAppliedRef.current && (
+          <Button type="button" variant="ghost" onClick={applySampleSetup} className="w-full sm:w-auto">
+            Use sample data
+          </Button>
+        )}
+        </div>
       </div>
 
       {flats.length > 1 && (
@@ -658,7 +832,7 @@ export default function NewBillPage() {
             <CardContent>
               {!preview ? (
                 <p className="text-sm text-muted-foreground">
-                  Enter bill details and units to see the split preview.
+                  Enter the bill amount, units, and current readings to unlock the live split preview.
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -737,6 +911,19 @@ export default function NewBillPage() {
           </Card>
         </div>
       </div>
-    </form>
+      </form>
+      <GuestConversionDialog
+        open={showSavePrompt}
+        onOpenChange={(open) => {
+          setShowSavePrompt(open)
+          if (!open && pendingSavedBillId) {
+            router.push(`/bill/${pendingSavedBillId}`)
+            setPendingSavedBillId(null)
+          }
+        }}
+        source="save"
+        callbackURL={pendingSavedBillId ? `/bill/${pendingSavedBillId}` : "/dashboard"}
+      />
+    </>
   )
 }

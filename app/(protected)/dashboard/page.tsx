@@ -105,7 +105,7 @@ export default function DashboardPage() {
           <div className="space-y-1.5"><Skeleton className="h-7 w-32" /><Skeleton className="h-4 w-20" /></div>
           <Skeleton className="h-9 w-28" />
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
         </div>
         <Skeleton className="h-10 w-full rounded-xl" />
@@ -193,24 +193,30 @@ export default function DashboardPage() {
       </div>
 
       {/* 4 stat cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
             <Card key={stat.label}>
-              <CardContent className="p-5">
+              <CardContent className="p-3 sm:p-4 lg:p-5">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
-                    <p className="mt-1.5 text-2xl font-bold tabular-nums leading-none truncate">{stat.value}</p>
+                    <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-xs">
+                      {stat.label}
+                    </p>
+                    <p className="mt-1.5 text-[clamp(1rem,4vw,2rem)] font-bold leading-[1.05] tracking-tight [overflow-wrap:anywhere] tabular-nums sm:text-[clamp(1.35rem,3vw,2rem)]">
+                      {stat.value}
+                    </p>
                   </div>
-                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${stat.iconBg}`}>
-                    <Icon className={`h-[18px] w-[18px] ${stat.iconColor}`} />
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${stat.iconBg}`}>
+                    <Icon className={`h-4 w-4 sm:h-[18px] sm:w-[18px] ${stat.iconColor}`} />
                   </div>
                 </div>
-                {(stat as any).trend && <div className="mt-2">{(stat as any).trend}</div>}
+                {(stat as any).trend && <div className="mt-1.5 text-[11px] sm:mt-2 sm:text-xs">{(stat as any).trend}</div>}
                 {stat.sub && !((stat as any).trend) && (
-                  <p className="mt-2 text-xs text-muted-foreground">{stat.sub}</p>
+                  <p className="mt-1.5 text-[11px] leading-4 text-muted-foreground sm:mt-2 sm:text-xs">
+                    {stat.sub}
+                  </p>
                 )}
               </CardContent>
             </Card>

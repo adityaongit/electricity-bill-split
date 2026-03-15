@@ -54,7 +54,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-0">
               <TrackedButton href="/signup" location="hero" size="lg" className="min-w-[180px]">
-                Start Splitting Free
+                Split a Bill Now
               </TrackedButton>
               <Separator dashed orientation="vertical" className="h-10 mx-4 hidden sm:block" />
               <Link href="#how-it-works">
@@ -62,7 +62,11 @@ export default function LandingPage() {
                   See How It Works
                 </Button>
               </Link>
-
+            </div>
+            <div className="mt-4 flex flex-col items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                No signup needed. Data stays in your browser unless you create an account.
+              </p>
             </div>
           </div>
         </section>
@@ -207,9 +211,9 @@ export default function LandingPage() {
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
               Free forever for personal use. No credit card required.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 space-y-3">
               <TrackedButton href="/signup" location="bottom" size="lg" className="min-w-[200px]">
-                Get Started Free
+                Split a Bill Now
               </TrackedButton>
             </div>
           </div>
