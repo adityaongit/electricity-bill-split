@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -92,7 +92,7 @@ const SAMPLE_SETUP = {
   },
 }
 
-export default function NewBillPage() {
+function NewBillPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { service, isGuest } = useDataService()
@@ -925,5 +925,22 @@ export default function NewBillPage() {
         callbackURL={pendingSavedBillId ? `/bill/${pendingSavedBillId}` : "/dashboard"}
       />
     </>
+  )
+}
+
+function NewBillPageFallback() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-64 w-full" />
+    </div>
+  )
+}
+
+export default function NewBillPage() {
+  return (
+    <Suspense fallback={<NewBillPageFallback />}>
+      <NewBillPageContent />
+    </Suspense>
   )
 }
