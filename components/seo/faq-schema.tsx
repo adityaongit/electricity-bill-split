@@ -3,6 +3,14 @@ import { config } from "@/lib/config"
 // UI FAQs with formatted answers for display
 const faqs = [
   {
+    question: "What is a bill splitter for electricity bills?",
+    answer: `A bill splitter for electricity bills is a calculator that divides a shared power bill fairly between roommates or flatmates.
+
+SplitWatt uses submeter readings, common area units, and days stayed so each person pays for their own usage plus a fair share of shared consumption.`,
+    plainAnswer:
+      "A bill splitter for electricity bills is a calculator that divides a shared electricity bill fairly between roommates or flatmates. SplitWatt uses submeter readings, common area units, and days stayed so each person pays for their own usage plus a fair share of shared consumption.",
+  },
+  {
     question: "How do I split electricity bills with roommates?",
     answer: `To split electricity bills fairly with roommates:
 
@@ -47,8 +55,8 @@ Final Amount = (Person's Units × Rate) + (Person's Common Share × Common Rate)
       "Electricity bill per person is calculated by: 1) Finding each person's consumed units from their submeter (current - previous reading), 2) Calculating their share of common units based on days stayed, 3) Converting total units to amount using the bill's unit rate, 4) Allocating common area costs proportionally. The final amount = (person's units × rate) + (person's common share × common rate).",
   },
   {
-    question: `Is ${config.app.name} free to use?`,
-    answer: `Yes, ${config.app.name} is completely free for personal bill splitting.
+    question: `Can I use this bill splitter without signing up?`,
+    answer: `Yes. ${config.app.name} works as a free bill splitter for personal use, even if you do not want to create an account.
 
 • Create an account to save your flats and bill history
 • Or use guest mode without signing up
@@ -57,7 +65,7 @@ Final Amount = (Person's Units × Rate) + (Person's Common Share × Common Rate)
 
 All features are free — no credit card required.`,
     plainAnswer:
-      `Yes, ${config.app.name} is completely free to use for personal bill splitting. You can create an account to save your flats and bill history, or use guest mode without signing up. Export bills as PDF or images and share with roommates on WhatsApp - all free.`,
+      `Yes. ${config.app.name} works as a free bill splitter for personal use, even if you do not want to create an account. You can create an account to save your flats and bill history, or use guest mode without signing up. Export bills as PDF or images and share with roommates on WhatsApp - all free.`,
   },
   {
     question: "What if a roommate was absent for some days?",

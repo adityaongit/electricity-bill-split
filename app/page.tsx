@@ -21,8 +21,22 @@ import {
 import { config } from "@/lib/config"
 
 export const metadata: Metadata = {
+  title: "Bill Splitter for Electricity Bills | SplitWatt",
+  description:
+    "Split electricity bills fairly with a free bill splitter for roommates. Calculate each person's share using submeter readings, days stayed, and common area costs.",
   alternates: {
     canonical: config.app.url,
+  },
+  openGraph: {
+    title: "Bill Splitter for Electricity Bills | SplitWatt",
+    description:
+      "Split electricity bills fairly with a free bill splitter for roommates. Calculate each person's share using submeter readings, days stayed, and common area costs.",
+    url: config.app.url,
+  },
+  twitter: {
+    title: "Bill Splitter for Electricity Bills | SplitWatt",
+    description:
+      "Split electricity bills fairly with a free bill splitter for roommates. Calculate each person's share using submeter readings, days stayed, and common area costs.",
   },
 }
 
@@ -164,31 +178,32 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-12 flex flex-col items-center gap-8 md:flex-row md:justify-between">
-              <div className="text-center flex-1">
+              <div id="step1" className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   1
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">Add roommates</h3>
+                <h3 className="mt-4 text-lg font-semibold">Add bill details</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Set up your flat and add roommates to their respective areas.
+                  Enter your electricity bill amount, total units, and billing period.
                 </p>
               </div>
 
               <Separator dashed orientation="vertical" className="h-24 hidden md:block" />
 
-              <div className="text-center flex-1">
+              <div id="step2" className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   2
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">Enter bill details</h3>
+                <h3 className="mt-4 text-lg font-semibold">Add submeters and roommates</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Input the total bill, units, and submeter readings. See the split live.
+                  Input submeter readings and days stayed so each person&apos;s share is based on
+                  real usage.
                 </p>
               </div>
 
               <Separator dashed orientation="vertical" className="h-24 hidden md:block" />
 
-              <div className="text-center flex-1">
+              <div id="step3" className="text-center flex-1">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg font-bold">
                   3
                 </div>
@@ -224,10 +239,10 @@ export default function LandingPage() {
         <section id="faq" className="bg-muted/20 py-20">
           <div className="mx-auto max-w-3xl px-4 sm:px-6">
             <h2 className="text-center text-3xl font-bold tracking-tight mb-3">
-              Frequently Asked Questions
+              Bill splitter FAQ
             </h2>
             <p className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
-              Everything you need to know about splitting electricity bills fairly.
+              Everything you need to know about using an electricity bill splitter fairly.
             </p>
 
             <FaqAccordion faqs={faqs.slice(0, 6)} />

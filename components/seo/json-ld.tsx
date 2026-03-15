@@ -11,11 +11,17 @@ export function JsonLd() {
         "@type": "WebApplication",
         "@id": `${baseUrl}#webapp`,
         name: `${config.app.name} - Electricity Bill Splitter`,
-        alternateName: ["Electricity Bill Splitter", "Electric Bill Split Calculator"],
+        alternateName: [
+          "Electricity Bill Splitter",
+          "Bill Splitter",
+          "Electric Bill Split Calculator",
+          "Roommate Bill Splitter",
+        ],
         description:
-          "Split electricity bills fairly among roommates with submeter readings. Track usage by area, handle common costs, and export bills as PDF or images. Free tool for flatmates and shared accommodations.",
+          "Split electricity bills fairly among roommates with submeter readings. Track usage by area, handle common costs, and export bills as PDF or images. Free bill splitter for flatmates and shared accommodations.",
         url: baseUrl,
         applicationCategory: "UtilityApplication",
+        applicationSubCategory: "Bill Splitter",
         operatingSystem: "Web",
         browserRequirements: "Requires JavaScript. Requires HTML5.",
         offers: {
@@ -43,7 +49,23 @@ export function JsonLd() {
           name: config.app.author,
         },
         keywords:
-          "electricity bill splitter, electric bill split, roommate bill split, submeter calculator, flatmate bill sharing, common area electricity split",
+          "bill splitter, electricity bill splitter, electric bill split, roommate bill split, shared bill calculator, submeter calculator, flatmate bill sharing, common area electricity split",
+      },
+
+      {
+        "@type": "WebPage",
+        "@id": `${baseUrl}#webpage`,
+        url: baseUrl,
+        name: "Bill Splitter for Electricity Bills",
+        description:
+          "Free bill splitter for shared electricity bills. Calculate fair roommate splits using submeter readings, days stayed, and common area costs.",
+        about: {
+          "@id": `${baseUrl}#webapp`,
+        },
+        primaryImageOfPage: `${baseUrl}/opengraph-image`,
+        isPartOf: {
+          "@id": `${baseUrl}#website`,
+        },
       },
 
       // Organization Schema
@@ -69,7 +91,7 @@ export function JsonLd() {
         "@id": `${baseUrl}#website`,
         url: baseUrl,
         name: config.app.author,
-        description: "Free electricity bill splitter for roommates",
+        description: "Free bill splitter for roommates and shared electricity bills",
         publisher: {
           "@id": `${baseUrl}#organization`,
         },
