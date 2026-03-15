@@ -58,9 +58,9 @@ export default function LandingPage() {
         {/* Hero */}
         <section className="py-20 sm:py-32">
           <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
-            <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              Split electricity bills
-              <span className="text-foreground/80"> fairly</span> among roommates
+            <h1 className="mx-auto max-w-5xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              Split electricity bills fairly
+              <span className="block text-foreground/80">among roommates</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
               Use submeter readings to calculate each roommate&apos;s share accurately.
